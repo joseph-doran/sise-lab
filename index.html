@@ -253,6 +253,11 @@
   .mapwrap{position:relative; aspect-ratio:4/3; background:var(--bg2)}
   #heroMap{position:absolute; inset:0; width:100%; height:100%}
   .mapfb{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:18px; color:var(--mut); font-size:12.5px; font-weight:600; line-height:1.6; background:var(--bg2)}
+  /* 임장플러스 '단지 임장' 라벨 (실제 앱과 동일) */
+  .imj-pin{display:flex; align-items:center; gap:4px; padding:7px 11px; border-radius:999px; background:#3E5676; color:#fff; font-size:12.5px; font-weight:700; line-height:1; box-shadow:0 2px 8px rgba(0,0,0,.28); white-space:nowrap; position:relative}
+  .imj-pin::after{content:""; position:absolute; left:50%; bottom:-6px; transform:translateX(-50%); border:6px solid transparent; border-top-color:#3E5676; border-bottom:0}
+  .imj-pin .s{color:#fde047; font-size:11.5px}
+  .imj-pin.sel{background:#d97706} .imj-pin.sel::after{border-top-color:#d97706}
 </style>
 </head>
 <body>
@@ -473,11 +478,28 @@
     if(!window.kakao || !window.kakao.maps){ fail('지도는 배포 사이트에서 표시됩니다 (joseph-doran.github.io)'); return; }
     kakao.maps.load(function(){
       try{
-        var map=new kakao.maps.Map(el, { center:new kakao.maps.LatLng(37.5665,126.9780), level:9 });
+        var map=new kakao.maps.Map(el, { center:new kakao.maps.LatLng(37.52,127.0), level:9 });
         map.setZoomable(false);
-        [[37.5172,127.0473],[37.5563,126.9226],[37.4979,127.0276],[37.5445,127.0559],[37.4563,126.7052],[37.2636,127.0286]].forEach(function(p){
-          new kakao.maps.Marker({ map:map, position:new kakao.maps.LatLng(p[0],p[1]) });
+        // 임장플러스에서 '단지 임장' 기록 시 뜨는 라벨(단지명 + ★별점) — 데모 표시
+        var PINS=[
+          { lat:37.5096, lng:127.1010, name:"헬리오시티",        avg:4.6, sel:true },
+          { lat:37.5045, lng:127.0098, name:"반포자이",          avg:4.7 },
+          { lat:37.5540, lng:126.9540, name:"마포래미안푸르지오", avg:4.4 },
+          { lat:37.5410, lng:127.0095, name:"래미안옥수리버젠",   avg:4.3 },
+          { lat:37.3862, lng:126.6390, name:"송도더샵퍼스트파크", avg:4.2 },
+          { lat:37.2872, lng:127.0535, name:"광교중흥S클래스",    avg:4.5 }
+        ];
+        var b=new kakao.maps.LatLngBounds();
+        PINS.forEach(function(p){
+          var pos=new kakao.maps.LatLng(p.lat,p.lng);
+          var div=document.createElement('div');
+          div.className='imj-pin'+(p.sel?' sel':'');
+          var n=document.createElement('span'); n.textContent=p.name; div.appendChild(n);
+          if(p.avg){ var s=document.createElement('span'); s.className='s'; s.textContent='★'+p.avg.toFixed(1); div.appendChild(s); }
+          new kakao.maps.CustomOverlay({ map:map, position:pos, content:div, yAnchor:1.3, zIndex:p.sel?3:1 });
+          b.extend(pos);
         });
+        map.setBounds(b, 58, 28, 72, 28);
         if(fb) fb.style.display='none';
       }catch(e){ fail('지도를 불러오지 못했습니다'); }
     });
