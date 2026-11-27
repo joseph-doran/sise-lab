@@ -30,9 +30,13 @@
   a{color:inherit; text-decoration:none}
 
   /* highlight pill (NTIS-style keyword) */
-  .hl{display:inline-flex; align-items:center; gap:9px; padding:3px 16px 5px; border-radius:999px; color:#fff; font-weight:800;
-    background:linear-gradient(120deg,#3E5676,#5A7BA8); box-shadow:0 8px 22px rgba(62,86,118,.28)}
-  .hl .d{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #fff, #C8BCA8 70%)}
+  .hl{position:relative; display:inline-flex; align-items:center; gap:10px; padding:4px 19px 6px; border-radius:999px; color:#fff; font-weight:800; isolation:isolate;
+    background:linear-gradient(135deg,#43597b 0%,#5A7BA8 58%,#6f8dba 100%); border:1px solid rgba(255,255,255,.26);
+    box-shadow:0 12px 26px -6px rgba(62,86,118,.45), 0 2px 5px rgba(24,33,46,.18), inset 0 1px 0 rgba(255,255,255,.34), inset 0 -3px 7px rgba(24,33,46,.22)}
+  .hl::before{content:""; position:absolute; inset:1px 1px 44% 1px; border-radius:999px 999px 60% 60%/999px 999px 100% 100%;
+    background:linear-gradient(180deg, rgba(255,255,255,.26), rgba(255,255,255,0)); pointer-events:none; z-index:-1}
+  .hl .d{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 34% 28%, #fff 0%, #efe9dc 52%, #C8BCA8 100%);
+    box-shadow:0 1px 2px rgba(24,33,46,.4), 0 0 0 2px rgba(255,255,255,.16)}
 
   /* nav */
   nav.bar{position:sticky; top:0; z-index:40; background:var(--nav-bg); backdrop-filter:blur(14px); border-bottom:1px solid var(--line)}
@@ -201,7 +205,7 @@
 <!-- HERO -->
 <header id="top" class="hero"><div class="wrap"><div class="hero-grid">
   <div>
-    <div class="eyebrow-top">온라인 임장 <sup style="color:var(--brand);font-weight:900">+</sup> 현장 임장 · 임장플러스</div>
+    <div class="eyebrow-top">온라인 임장 + 현장 임장 · 임장플러스<sup style="color:var(--brand);font-weight:900;font-size:.68em;margin-left:1px">+</sup></div>
     <h1>좋은 집을 알아보는<br /><span class="hl"><span class="d"></span>가장 확실한 방법</span></h1>
     <p class="lead">임장, 이제 집에서 시작하세요. 시세·실거래로 온라인 임장을 하고, 마음에 든 단지는 현장에서 기록합니다. 온라인과 현장을 잇는 <b style="color:var(--ink)">+</b>, 임장플러스.</p>
     <form class="searchbar" onsubmit="location.href='로그인.html';return false;">
