@@ -249,10 +249,10 @@
   .mock-stats>div{background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:9px 5px}
   .ms-n{font-size:14.5px; font-weight:800; color:var(--brand); letter-spacing:-.02em}
   .ms-n.up{color:#3f8f6e} .ms-l{font-size:10px; color:var(--mut); margin-top:2px}
-  /* 지도 자리(비움 · 추후 카카오 지도) */
-  .mapslot{aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; text-align:center; background:var(--bg2); color:var(--mut); font-size:13px; font-weight:600; line-height:1.7}
-  .mapslot em{font-style:normal; font-size:11.5px; color:var(--mut); opacity:.7}
-  .mapslot span>:first-child{font-size:24px}
+  /* 카카오맵 (시세플러스 미리보기) */
+  .mapwrap{position:relative; aspect-ratio:4/3; background:var(--bg2)}
+  #heroMap{position:absolute; inset:0; width:100%; height:100%}
+  .mapfb{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:18px; color:var(--mut); font-size:12.5px; font-weight:600; line-height:1.6; background:var(--bg2)}
 </style>
 </head>
 <body>
@@ -262,8 +262,8 @@
   <div class="bar-in">
     <a class="brand" href="#top"><span class="mark"><svg viewBox="0 0 48 48" width="24" height="24" aria-hidden="true"><g transform="translate(24 24) scale(.92) translate(-22.45 -24.57)"><path d="M20 7.2 A12.8 12.8 0 0 1 26.4 31.08 L23.8 26.58 A7.6 7.6 0 0 0 20 12.4 Z" fill="#fff"/><path d="M26.4 31.08 A12.8 12.8 0 0 1 7.39 22.22 L12.52 21.32 A7.6 7.6 0 0 0 23.8 26.58 Z" fill="#cdd9ea"/><path d="M7.39 22.22 A12.8 12.8 0 0 1 20 7.2 L20 12.4 A7.6 7.6 0 0 0 12.52 21.32 Z" fill="#9db4d6"/><rect x="28.5" y="28.5" width="13" height="6" rx="3" transform="rotate(45 28.5 28.5)" fill="#fff"/><rect x="16.3" y="18.6" width="7.4" height="2.8" rx="1.4" fill="#fff"/><rect x="18.6" y="16.3" width="2.8" height="7.4" rx="1.4" fill="#fff"/></g></svg></span><span class="nm">임장플러스<sup style="font-size:.56em;color:var(--brand);font-weight:900;vertical-align:super;margin-left:.5px">+</sup></span></a>
     <div class="bar-links">
-      <a class="hidem" href="#features">온라인 임장</a>
-      <a class="hidem" href="#imjang">현장 임장</a>
+      <a class="hidem" href="#features">시세플러스</a>
+      <a class="hidem" href="#imjang">임장플러스</a>
       <a class="hidem" href="#data">데이터</a>
       <a class="hidem" href="#about">소개</a>
       <a class="go" href="login.html">시작하기</a>
@@ -301,25 +301,25 @@
       </div>
 
       <div class="ctarow" style="margin-top:20px">
-        <a class="btn btn-p" href="login.html">대시보드 시작하기 →</a>
+        <a class="btn btn-p" href="login.html">시세플러스 시작하기 →</a>
         <a class="btn btn-g" href="#features">기능 둘러보기</a>
       </div>
     </div>
 
     <div class="hshot">
       <div class="frame">
-        <div class="top"><i></i><i></i><i></i><span class="url">임장플러스 · 지도</span></div>
-        <div class="mapslot"><span>🗺️<br>카카오 지도 자리<br><em>(준비 중)</em></span></div>
+        <div class="top"><i></i><i></i><i></i><span class="url">시세플러스 · 지도</span></div>
+        <div class="mapwrap"><div id="heroMap"></div><div class="mapfb" id="heroMapFb">카카오맵 불러오는 중…</div></div>
       </div>
     </div>
   </div>
 
   <div class="qcards">
-    <a class="qc" href="login.html"><span class="rec">★ 추천</span><span class="qt">온라인 임장</span><h3>단지 리포트</h3><p>10년 추이·회복률</p><span class="qi">🔎</span></a>
-    <a class="qc" href="login.html"><span class="qt">온라인 임장</span><h3>이달의 신고가</h3><p>지역별 경신</p><span class="qi">🔥</span></a>
-    <a class="qc" href="login.html"><span class="qt">온라인 임장</span><h3>급지 사다리</h3><p>구/시 중위가</p><span class="qi">🧗</span></a>
-    <a class="qc" href="login.html"><span class="qt">온라인 임장</span><h3>분양권 단지</h3><p>입주예정·공급가</p><span class="qi">🎟️</span></a>
-    <a class="qc" href="login.html"><span class="qt">온라인 임장</span><h3>지도·관심단지</h3><p>위치·비교</p><span class="qi">🗺️</span></a>
+    <a class="qc" href="login.html"><span class="rec">★ 추천</span><span class="qt">시세플러스</span><h3>단지 리포트</h3><p>10년 추이·회복률</p><span class="qi">🔎</span></a>
+    <a class="qc" href="login.html"><span class="qt">시세플러스</span><h3>이달의 신고가</h3><p>지역별 경신</p><span class="qi">🔥</span></a>
+    <a class="qc" href="login.html"><span class="qt">시세플러스</span><h3>급지 사다리</h3><p>구/시 중위가</p><span class="qi">🧗</span></a>
+    <a class="qc" href="login.html"><span class="qt">시세플러스</span><h3>분양권 단지</h3><p>입주예정·공급가</p><span class="qi">🎟️</span></a>
+    <a class="qc" href="login.html"><span class="qt">시세플러스</span><h3>지도·관심단지</h3><p>위치·비교</p><span class="qi">🗺️</span></a>
     <a class="qc imj" href="https://joseph-doran.github.io/imjangplus/" target="_blank" rel="noopener"><span class="qt">현장 임장</span><h3>임장 체크리스트</h3><p>사진·별점·메모</p><span class="qi">📸</span></a>
   </div>
 </div></header>
@@ -418,7 +418,7 @@
     <div class="avatar"><svg viewBox="0 0 24 24" width="56" height="56" fill="none" aria-hidden="true"><path d="M3.8 10.8 12 4.3l8.2 6.5" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.8 10v8.2h12.4V10" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.6 15.6l2.2-2.2 1.6 1.6 2.9-3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <div>
       <h3>김팀장</h3><div class="role">부동산 시장 거시분석 · 데이터 트래커</div>
-      <p>서울·경기·인천 부동산을 '분위기'가 아니라 '데이터'로 읽습니다. 매주 발행하는 [김팀장] 주간 리포트가 바로 임장플러스의 온라인 임장 지표에서 나옵니다.</p>
+      <p>서울·경기·인천 부동산을 '분위기'가 아니라 '데이터'로 읽습니다. 매주 발행하는 [김팀장] 주간 리포트가 바로 시세플러스의 실거래 지표에서 나옵니다.</p>
       <p>임장플러스는 그 리포트를 쓰기 위해 직접 만들고 매주 갱신하는 도구이자, 같은 질문을 가진 분들을 위한 공개 창입니다.</p>
     </div>
   </div>
@@ -452,7 +452,7 @@
       <div class="ftag">온라인으로 둘러보고, 현장에서 확인하다 — 임장을 잇는 +</div>
     </div>
     <div class="links">
-      <a href="login.html">📊 온라인 임장(시세)</a>
+      <a href="login.html">📊 시세플러스</a>
       <a href="https://joseph-doran.github.io/imjangplus/" target="_blank" rel="noopener">📸 임장플러스</a>
       <a href="#" data-fill="report">📰 [김팀장] 주간 리포트</a>
       <a href="#" data-fill="blog">✍️ 블로그</a>
@@ -463,6 +463,26 @@
 
 <a class="fab" href="login.html">✦ <span class="t">임장 시작하기</span></a>
 
+<!-- 카카오맵 SDK (도메인 잠금 JS키 · joseph-doran.github.io 등록) -->
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=549c0fc0779aedc7bb81bd57e0cd00dc&autoload=false"></script>
+<script>
+  // 히어로 카카오맵 (시세플러스 미리보기)
+  (function(){
+    var el=document.getElementById('heroMap'), fb=document.getElementById('heroMapFb');
+    function fail(msg){ if(fb){ fb.textContent=msg; fb.style.display='flex'; } }
+    if(!window.kakao || !window.kakao.maps){ fail('지도는 배포 사이트에서 표시됩니다 (joseph-doran.github.io)'); return; }
+    kakao.maps.load(function(){
+      try{
+        var map=new kakao.maps.Map(el, { center:new kakao.maps.LatLng(37.5665,126.9780), level:9 });
+        map.setZoomable(false);
+        [[37.5172,127.0473],[37.5563,126.9226],[37.4979,127.0276],[37.5445,127.0559],[37.4563,126.7052],[37.2636,127.0286]].forEach(function(p){
+          new kakao.maps.Marker({ map:map, position:new kakao.maps.LatLng(p[0],p[1]) });
+        });
+        if(fb) fb.style.display='none';
+      }catch(e){ fail('지도를 불러오지 못했습니다'); }
+    });
+  })();
+</script>
 <script>
   // 히어로 검색 탭 — 플레이스홀더 전환 (모두 로그인으로 진입)
   (function(){
