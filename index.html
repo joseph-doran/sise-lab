@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>임장플러스 · 온라인 임장부터 현장 임장까지</title>
 <meta name="description" content="임장플러스 — 집에서 하는 온라인 임장(국토부 실거래)과 발로 뛰는 현장 임장을 하나로. 서울·경기·인천 아파트." />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
 <style>
   :root{
@@ -25,7 +26,7 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0; scroll-behavior:smooth}
-  body{background:var(--bg); color:var(--ink); font-size:15px; letter-spacing:-.01em; font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif; line-height:1.65; -webkit-font-smoothing:antialiased}
+  body{background:radial-gradient(1000px 540px at 84% -10%, rgba(90,123,168,.11), transparent 62%), radial-gradient(780px 520px at -6% -6%, rgba(200,188,168,.16), transparent 56%), var(--bg); color:var(--ink); font-size:15px; letter-spacing:-.01em; font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif; line-height:1.65; -webkit-font-smoothing:antialiased}
   .wrap{max-width:1080px; margin:0 auto; padding:0 20px}
   a{color:inherit; text-decoration:none}
 
@@ -183,6 +184,45 @@
   .foot .links a{font-size:13px; font-weight:600; color:#cdd3da; padding:8px 14px; border:1px solid rgba(255,255,255,.12); border-radius:999px; background:rgba(255,255,255,.04)}
   .foot .links a:hover{color:#fff; background:rgba(255,255,255,.1)}
   .cp{text-align:center; font-size:12.5px; color:#6f7a88; border-top:1px solid rgba(255,255,255,.08); padding-top:20px; max-width:1080px; margin:0 auto}
+
+  /* ===== 레퍼런스형 업그레이드 (중앙 히어로·탭검색·칩·퀵카드) ===== */
+  .hero2{position:relative; padding:58px 0 24px; text-align:center}
+  .badge{display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:800; color:var(--brand); background:rgba(90,123,168,.1); border:1px solid rgba(90,123,168,.2); padding:5px 14px; border-radius:999px; margin-bottom:20px}
+  .badge .bd{width:6px; height:6px; border-radius:50%; background:var(--brand2); box-shadow:0 0 0 3px rgba(90,123,168,.18)}
+  .hero2 h1{font-size:clamp(25px,4.4vw,40px); line-height:1.24; margin:0 auto 16px; max-width:720px; letter-spacing:-.03em}
+  .hero2 .lead{max-width:540px; margin:0 auto 28px; font-size:clamp(14px,1.6vw,16px); color:var(--sub)}
+  .stabs{display:flex; justify-content:center; gap:26px; border-bottom:1px solid var(--line); max-width:600px; margin:0 auto 20px}
+  .stab{position:relative; background:none; border:0; cursor:pointer; font-family:inherit; font-size:13.5px; font-weight:700; color:var(--mut); padding:0 2px 13px; display:inline-flex; align-items:center; gap:6px}
+  .stab.on{color:var(--brand)}
+  .stab.on::after{content:""; position:absolute; left:0; right:0; bottom:-1px; height:2.5px; border-radius:2px; background:linear-gradient(90deg,#3E5676,#5A7BA8)}
+  .stab .nw{font-size:9px; font-weight:800; color:#fff; background:linear-gradient(135deg,#8F7B5B,#61533D); padding:1px 5px; border-radius:5px; letter-spacing:.03em}
+  .bigsearch{position:relative; max-width:640px; margin:0 auto}
+  .bigsearch .glow{position:absolute; inset:-10px -4px; border-radius:30px; background:radial-gradient(70% 90% at 50% 10%, rgba(90,123,168,.22), transparent 70%); filter:blur(12px); z-index:-1; pointer-events:none}
+  .bigsearch form{display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--line); border-radius:22px; padding:9px 9px 9px 24px; box-shadow:0 24px 54px -26px rgba(62,86,118,.55), 0 2px 10px rgba(56,48,36,.05)}
+  .bigsearch input{flex:1; border:0; background:transparent; color:var(--ink); font-size:15.5px; padding:13px 0; outline:none; font-family:inherit}
+  .bigsearch .send{flex:0 0 auto; width:50px; height:50px; border-radius:50%; border:0; cursor:pointer; background:linear-gradient(135deg,#3E5676,#5A7BA8); color:#fff; font-size:21px; line-height:1; box-shadow:0 10px 20px -6px rgba(62,86,118,.5); transition:transform .12s}
+  .bigsearch .send:hover{transform:scale(1.06)}
+  .chips{display:flex; flex-wrap:wrap; gap:9px; justify-content:center; max-width:720px; margin:22px auto 0}
+  .chip2{font-size:13px; font-weight:600; color:var(--sub); background:var(--panel); border:1px solid var(--line); padding:8px 15px; border-radius:999px; cursor:pointer; transition:all .13s}
+  .chip2:hover{color:var(--brand); border-color:var(--brand2); box-shadow:0 8px 16px -10px rgba(62,86,118,.6); transform:translateY(-1px)}
+  .qcards{display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-top:42px}
+  @media(max-width:1000px){ .qcards{grid-template-columns:repeat(3,1fr)} }
+  @media(max-width:620px){ .qcards{grid-template-columns:repeat(2,1fr)} }
+  .qc{position:relative; display:block; text-align:left; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px 15px 50px; box-shadow:var(--shadow-sm); transition:transform .14s, box-shadow .14s, border-color .14s; overflow:hidden}
+  .qc:hover{transform:translateY(-4px); box-shadow:var(--shadow-md); border-color:rgba(90,123,168,.4)}
+  .qc .qt{font-size:10.5px; font-weight:800; color:var(--brand); background:rgba(90,123,168,.1); padding:2px 8px; border-radius:999px; display:inline-block}
+  .qc h3{font-size:14.5px; font-weight:800; margin:11px 0 3px}
+  .qc p{font-size:11.5px; color:var(--mut); margin:0}
+  .qc .qi{position:absolute; right:11px; bottom:10px; font-size:23px; opacity:.92}
+  .qc .rec{position:absolute; top:0; left:15px; font-size:10.5px; font-weight:800; color:#fff; background:var(--ink); padding:4px 10px 5px; border-radius:0 0 9px 9px}
+  .qc.imj{border-color:rgba(143,123,91,.3)} .qc.imj .qt{color:var(--accent2); background:rgba(143,123,91,.13)}
+  /* 세로바 섹션 헤더 (레퍼런스 '직접 계산·비교') */
+  .barh{display:flex; align-items:center; gap:11px; font-size:clamp(18px,2.4vw,22px); font-weight:800; margin:0 0 6px; letter-spacing:-.02em}
+  .barh::before{content:""; width:4px; height:20px; border-radius:3px; background:linear-gradient(180deg,#3E5676,#5A7BA8)}
+  /* 플로팅 CTA */
+  .fab{position:fixed; right:18px; bottom:18px; z-index:50; display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#3E5676,#5A7BA8); color:#fff; box-shadow:0 14px 32px -10px rgba(62,86,118,.6); padding:12px 18px; border-radius:999px; font-weight:800; font-size:13.5px; transition:transform .14s}
+  .fab:hover{transform:translateY(-2px)}
+  @media(max-width:560px){ .fab span.t{display:none} .fab{padding:13px} }
 </style>
 </head>
 <body>
@@ -190,7 +230,7 @@
 <!-- NAV -->
 <nav class="bar">
   <div class="bar-in">
-    <a class="brand" href="#top"><span class="mark"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M3.8 10.8 12 4.3l8.2 6.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.8 10v8.2h12.4V10" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.6 15.6l2.2-2.2 1.6 1.6 2.9-3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nm">임장플러스<sup style="font-size:.56em;color:var(--brand);font-weight:900;vertical-align:super;margin-left:.5px">+</sup></span></a>
+    <a class="brand" href="#top"><span class="mark"><svg viewBox="0 0 48 48" width="24" height="24" aria-hidden="true"><g transform="translate(24 25) scale(.84) translate(-20 -20)"><path d="M20 7.2 A12.8 12.8 0 0 1 26.4 31.08 L23.8 26.58 A7.6 7.6 0 0 0 20 12.4 Z" fill="#fff"/><path d="M26.4 31.08 A12.8 12.8 0 0 1 7.39 22.22 L12.52 21.32 A7.6 7.6 0 0 0 23.8 26.58 Z" fill="#cdd9ea"/><path d="M7.39 22.22 A12.8 12.8 0 0 1 20 7.2 L20 12.4 A7.6 7.6 0 0 0 12.52 21.32 Z" fill="#9db4d6"/><rect x="28.5" y="28.5" width="13" height="6" rx="3" transform="rotate(45 28.5 28.5)" fill="#fff"/><rect x="16.3" y="18.6" width="7.4" height="2.8" rx="1.4" fill="#fff"/><rect x="18.6" y="16.3" width="2.8" height="7.4" rx="1.4" fill="#fff"/></g></svg></span><span class="nm">임장플러스<sup style="font-size:.56em;color:var(--brand);font-weight:900;vertical-align:super;margin-left:.5px">+</sup></span></a>
     <div class="bar-links">
       <a class="hidem" href="#features">온라인 임장</a>
       <a class="hidem" href="#imjang">현장 임장</a>
@@ -203,27 +243,42 @@
 </nav>
 
 <!-- HERO -->
-<header id="top" class="hero"><div class="wrap"><div class="hero-grid">
-  <div>
-    <div class="eyebrow-top">온라인 임장 + 현장 임장 · 임장플러스<sup style="color:var(--brand);font-weight:900;font-size:.68em;margin-left:1px">+</sup></div>
-    <h1>좋은 집을 알아보는<br /><span class="hl">가장 확실한 방법</span></h1>
-    <p class="lead">임장, 이제 집에서 시작하세요. 시세·실거래로 온라인 임장을 하고, 마음에 든 단지는 현장에서 기록합니다. 온라인과 현장을 잇는 <b style="color:var(--ink)">+</b>, 임장플러스.</p>
-    <form class="searchbar" onsubmit="location.href='로그인.html';return false;">
-      <input placeholder="단지명으로 검색해 보세요 (예: 헬리오시티)" />
-      <button type="submit">검색</button>
+<header id="top" class="hero2"><div class="wrap">
+  <span class="badge"><span class="bd"></span>온라인 임장 + 현장 임장 · 임장플러스<sup style="color:var(--brand);font-weight:900;font-size:.72em">+</sup></span>
+  <h1>좋은 집을 알아보는<br /><span class="hl">가장 확실한 방법</span></h1>
+  <p class="lead">단지명만 넣으면 10년 실거래가 한눈에. 집에서 온라인 임장을 하고, 마음에 든 단지는 현장에서 기록하세요.</p>
+
+  <div class="stabs">
+    <button class="stab on" data-ph="단지명으로 검색 (예: 헬리오시티)">📍 단지 검색</button>
+    <button class="stab" data-ph="지역·지하철역으로 검색 (예: 마포)">🗺️ 지역·지도</button>
+    <button class="stab" data-ph="구/시로 급지 비교 (예: 강남구)">🧗 급지 비교</button>
+  </div>
+
+  <div class="bigsearch"><span class="glow"></span>
+    <form onsubmit="location.href='login.html';return false;">
+      <input id="hsearch" placeholder="단지명으로 검색 (예: 헬리오시티)" aria-label="검색" />
+      <button class="send" type="submit" aria-label="검색">→</button>
     </form>
-    <div class="ctarow">
-      <a class="btn btn-p" href="login.html">대시보드 시작하기 →</a>
-      <a class="btn btn-g" href="#features">기능 둘러보기</a>
-    </div>
-    <div class="trust"><span>🏛️ <b>국토부 실거래</b> 기반</span><span>📸 <b>임장 기록</b></span><span>🔒 회원 전용</span></div>
   </div>
-  <div class="frame">
-    <div class="top"><i></i><i></i><i></i><span class="url">임장플러스 · 온라인 임장</span></div>
-    <img class="shot" src="assets/shot-hero.png" alt="시세 대시보드" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-    <div class="shot-ph" style="display:none"><span class="big">🖥️</span><div><b>대표 스크린샷 자리</b><br>assets/shot-hero.png</div></div>
+
+  <div class="chips">
+    <span class="chip2" onclick="location.href='login.html'">헬리오시티 10년 추이</span>
+    <span class="chip2" onclick="location.href='login.html'">이번 달 신고가 많은 지역</span>
+    <span class="chip2" onclick="location.href='login.html'">강남구 84㎡ 급지</span>
+    <span class="chip2" onclick="location.href='login.html'">분양권 단지 모아보기</span>
+    <span class="chip2" onclick="location.href='login.html'">관심단지 비교</span>
+    <span class="chip2" onclick="location.href='login.html'">2021 고점 대비 회복률</span>
   </div>
-</div></div></header>
+
+  <div class="qcards">
+    <a class="qc" href="login.html"><span class="rec">★ 추천</span><span class="qt">온라인 임장</span><h3>단지 리포트</h3><p>10년 추이·회복률</p><span class="qi">🔎</span></a>
+    <a class="qc" href="login.html"><span class="qt">온라인 임장</span><h3>이달의 신고가</h3><p>지역별 경신</p><span class="qi">🔥</span></a>
+    <a class="qc" href="login.html"><span class="qt">온라인 임장</span><h3>급지 사다리</h3><p>구/시 중위가</p><span class="qi">🧗</span></a>
+    <a class="qc" href="login.html"><span class="qt">온라인 임장</span><h3>분양권 단지</h3><p>입주예정·공급가</p><span class="qi">🎟️</span></a>
+    <a class="qc" href="login.html"><span class="qt">온라인 임장</span><h3>지도·관심단지</h3><p>위치·비교</p><span class="qi">🗺️</span></a>
+    <a class="qc imj" href="https://joseph-doran.github.io/imjangplus/" target="_blank" rel="noopener"><span class="qt">현장 임장</span><h3>임장 체크리스트</h3><p>사진·별점·메모</p><span class="qi">📸</span></a>
+  </div>
+</div></header>
 
 <!-- STATS -->
 <section class="alt" style="padding:40px 0"><div class="wrap"><div class="stats">
@@ -349,7 +404,7 @@
 <footer>
   <div class="foot">
     <div>
-      <div class="fbrand"><span class="fm"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M3.8 10.8 12 4.3l8.2 6.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.8 10v8.2h12.4V10" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.6 15.6l2.2-2.2 1.6 1.6 2.9-3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>임장플러스<sup style="font-size:.56em;color:#9DB4D6;font-weight:900;vertical-align:super;margin-left:.5px">+</sup></div>
+      <div class="fbrand"><span class="fm"><svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><g transform="translate(24 25) scale(.84) translate(-20 -20)"><path d="M20 7.2 A12.8 12.8 0 0 1 26.4 31.08 L23.8 26.58 A7.6 7.6 0 0 0 20 12.4 Z" fill="#fff"/><path d="M26.4 31.08 A12.8 12.8 0 0 1 7.39 22.22 L12.52 21.32 A7.6 7.6 0 0 0 23.8 26.58 Z" fill="#cdd9ea"/><path d="M7.39 22.22 A12.8 12.8 0 0 1 20 7.2 L20 12.4 A7.6 7.6 0 0 0 12.52 21.32 Z" fill="#9db4d6"/><rect x="28.5" y="28.5" width="13" height="6" rx="3" transform="rotate(45 28.5 28.5)" fill="#fff"/><rect x="16.3" y="18.6" width="7.4" height="2.8" rx="1.4" fill="#fff"/><rect x="18.6" y="16.3" width="2.8" height="7.4" rx="1.4" fill="#fff"/></g></svg></span>임장플러스<sup style="font-size:.56em;color:#9DB4D6;font-weight:900;vertical-align:super;margin-left:.5px">+</sup></div>
       <div class="ftag">온라인으로 둘러보고, 현장에서 확인하다 — 임장을 잇는 +</div>
     </div>
     <div class="links">
@@ -362,6 +417,18 @@
   <div class="cp">© 2026 임장플러스 · 국토부 공개 실거래 기반</div>
 </footer>
 
+<a class="fab" href="login.html">✦ <span class="t">임장 시작하기</span></a>
+
+<script>
+  // 히어로 검색 탭 — 플레이스홀더 전환 (모두 로그인으로 진입)
+  (function(){
+    var tabs=document.querySelectorAll('.stab'), input=document.getElementById('hsearch');
+    tabs.forEach(function(t){ t.addEventListener('click', function(){
+      tabs.forEach(function(x){ x.classList.remove('on'); }); t.classList.add('on');
+      if(input && t.dataset.ph){ input.placeholder=t.dataset.ph; input.focus(); }
+    }); });
+  })();
+</script>
 <script>
   (function(){
     var btn=document.getElementById('themeBtn'), root=document.documentElement;
