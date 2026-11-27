@@ -479,7 +479,8 @@
     kakao.maps.load(function(){
       try{
         var map=new kakao.maps.Map(el, { center:new kakao.maps.LatLng(37.52,127.0), level:9 });
-        map.setZoomable(false);
+        map.setZoomable(true); // 홈 화면 지도 확대/축소 허용
+        map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
         // 임장플러스에서 '단지 임장' 기록 시 뜨는 라벨(단지명 + ★별점) — 데모 표시
         var PINS=[
           { lat:37.5096, lng:127.1010, name:"헬리오시티",        avg:4.6, sel:true },
