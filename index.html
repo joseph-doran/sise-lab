@@ -249,10 +249,10 @@
   .mock-stats>div{background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:9px 5px}
   .ms-n{font-size:14.5px; font-weight:800; color:var(--brand); letter-spacing:-.02em}
   .ms-n.up{color:#3f8f6e} .ms-l{font-size:10px; color:var(--mut); margin-top:2px}
-  /* 지도 플레이스홀더 */
-  .mapmock{display:none; line-height:0}
-  .mapmock svg{display:block; width:100%; height:auto}
-  .mapimg{display:block; width:100%; height:auto}
+  /* 지도 자리(비움 · 추후 카카오 지도) */
+  .mapslot{aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; text-align:center; background:var(--bg2); color:var(--mut); font-size:13px; font-weight:600; line-height:1.7}
+  .mapslot em{font-style:normal; font-size:11.5px; color:var(--mut); opacity:.7}
+  .mapslot span>:first-child{font-size:24px}
 </style>
 </head>
 <body>
@@ -309,24 +309,7 @@
     <div class="hshot">
       <div class="frame">
         <div class="top"><i></i><i></i><i></i><span class="url">임장플러스 · 지도</span></div>
-        <img class="mapimg" src="assets/map-hero.png" alt="임장플러스 지도" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
-        <div class="mapmock">
-          <svg viewBox="0 0 400 300" width="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            <rect width="400" height="300" fill="#e9edf1"/>
-            <rect x="-10" y="20" width="150" height="110" rx="10" fill="#dde7de"/>
-            <rect x="255" y="185" width="165" height="130" rx="12" fill="#d6e2ee"/>
-            <path d="M-20 165 Q120 140 210 185 T430 170" stroke="#d2dae4" stroke-width="26" fill="none"/>
-            <path d="M70 -10 V320" stroke="#ffffff" stroke-width="9"/>
-            <path d="M210 -10 V320" stroke="#ffffff" stroke-width="7"/>
-            <path d="M-10 110 H410" stroke="#ffffff" stroke-width="9"/>
-            <path d="M-10 230 H410" stroke="#ffffff" stroke-width="6"/>
-            <path d="M70 230 L210 110 L340 150" stroke="#ffffff" stroke-width="4" fill="none"/>
-            <g transform="translate(150 118) scale(.9)"><path d="M0 0c-9 0-16 7-16 16 0 11 16 28 16 28s16-17 16-28c0-9-7-16-16-16z" fill="#3E5676"/><circle cx="0" cy="16" r="6" fill="#fff"/></g>
-            <g transform="translate(262 92) scale(.72)"><path d="M0 0c-9 0-16 7-16 16 0 11 16 28 16 28s16-17 16-28c0-9-7-16-16-16z" fill="#8F7B5B"/><circle cx="0" cy="16" r="6" fill="#fff"/></g>
-            <g transform="translate(318 206) scale(.72)"><path d="M0 0c-9 0-16 7-16 16 0 11 16 28 16 28s16-17 16-28c0-9-7-16-16-16z" fill="#5A7BA8"/><circle cx="0" cy="16" r="6" fill="#fff"/></g>
-            <g transform="translate(95 212) scale(.6)"><path d="M0 0c-9 0-16 7-16 16 0 11 16 28 16 28s16-17 16-28c0-9-7-16-16-16z" fill="#5A7BA8"/><circle cx="0" cy="16" r="6" fill="#fff"/></g>
-          </svg>
-        </div>
+        <div class="mapslot"><span>🗺️<br>카카오 지도 자리<br><em>(준비 중)</em></span></div>
       </div>
     </div>
   </div>
