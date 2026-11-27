@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>로그인 · 김팀장의 시세랩</title>
+<meta name="description" content="김팀장의 시세랩 — 시세 대시보드 로그인 / 회원가입" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  :root{
+    --bg:#F5F3EF; --panel:#ffffff; --ink:#383024; --sub:#6f6456; --mut:#a99f8c;
+    --line:#e7e0d4; --brand:#3E5676; --brand2:#5A7BA8; --accent:#8a7655;
+    --rose:#9c6b4f; --card-shadow:0 1px 2px rgba(56,48,36,.05), 0 18px 50px rgba(56,48,36,.12);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --bg:#18212E; --panel:#1e2733; --ink:#f3efe8; --sub:#c7cdd6; --mut:#8a93a1;
+    --line:rgba(255,255,255,.09); --accent:#C8BCA8; --card-shadow:0 1px 2px rgba(0,0,0,.45), 0 18px 50px rgba(0,0,0,.5);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#18212E; --panel:#1e2733; --ink:#f3efe8; --sub:#c7cdd6; --mut:#8a93a1;
+    --line:rgba(255,255,255,.09); --accent:#C8BCA8; --card-shadow:0 1px 2px rgba(0,0,0,.45), 0 18px 50px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(90,123,168,.22), transparent 60%),
+      radial-gradient(700px 460px at 5% 110%, rgba(143,123,91,.18), transparent 60%),
+      var(--bg);
+    color:var(--ink); min-height:100%;
+    font-size:15px; letter-spacing:-.01em; -webkit-font-smoothing:antialiased; font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+    display:flex; align-items:center; justify-content:center; padding:18px;
+  }
+  .card{width:100%; max-width:306px; background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--card-shadow); padding:18px 19px}
+  .brand{display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:6px}
+  .mark{width:33px;height:33px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:900;
+    background:linear-gradient(135deg,#18212E,#3E5676 60%,#5A7BA8); box-shadow:0 5px 14px rgba(62,86,118,.35)}
+  .brand .nm{font-weight:800; font-size:15.5px; letter-spacing:-.01em}
+  .sub{text-align:center; color:var(--sub); font-size:12px; margin:2px 0 13px}
+
+  .tabs{display:flex; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:3px; margin-bottom:12px}
+  .tabs button{flex:1; border:0; background:transparent; padding:8px; border-radius:9px; font-weight:700; font-size:13.5px; color:var(--sub); cursor:pointer}
+  .tabs button.on{background:var(--panel); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  label{display:block; font-size:11.5px; font-weight:700; color:var(--sub); margin:10px 0 4px}
+  input{width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:9px; background:var(--bg); color:var(--ink); font-size:13.5px; outline:none}
+  input:focus{border-color:var(--brand); box-shadow:0 0 0 3px rgba(62,86,118,.15)}
+  .hint{font-size:11.5px; color:var(--mut); margin-top:5px}
+
+  .btn{width:100%; margin-top:14px; padding:11px; border:0; border-radius:10px; font-size:14px; font-weight:800; color:#fff; cursor:pointer;
+    background:linear-gradient(135deg,#3E5676,#5A7BA8); box-shadow:0 10px 24px rgba(62,86,118,.28); transition:filter .12s}
+  .btn:hover{filter:brightness(1.07)}
+
+  .msg{margin-top:14px; font-size:13px; padding:10px 12px; border-radius:10px; display:none}
+  .msg.err{display:block; background:rgba(156,107,79,.12); color:var(--rose); border:1px solid rgba(156,107,79,.3)}
+  .msg.ok{display:block; background:rgba(62,86,118,.1); color:var(--brand); border:1px solid rgba(62,86,118,.3)}
+
+  .div{display:flex; align-items:center; gap:12px; margin:16px 0 13px; color:var(--mut); font-size:12px}
+  .div::before,.div::after{content:""; flex:1; height:1px; background:var(--line)}
+
+  .soc{display:flex; flex-direction:column; gap:8px}
+  .soc button{position:relative; width:100%; padding:9px; border-radius:10px; font-size:13px; font-weight:700; border:1px solid var(--line); background:var(--panel); color:var(--mut); cursor:not-allowed; display:flex; align-items:center; justify-content:center; gap:8px}
+  .soc button .soon{position:absolute; right:12px; font-size:10px; font-weight:800; color:var(--mut); background:var(--bg); border:1px solid var(--line); padding:2px 7px; border-radius:999px}
+  .soc .k{opacity:.65} .soc .n{opacity:.65}
+
+  .foot{text-align:center; margin-top:16px; font-size:12px; color:var(--mut)}
+  .foot a{color:var(--sub); text-decoration:none; font-weight:600}
+  .demo{margin-top:13px; font-size:11px; color:var(--mut); text-align:center; background:var(--bg); border:1px dashed var(--line); border-radius:10px; padding:8px 10px; line-height:1.5}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand"><span class="mark"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" aria-hidden="true"><path d="M3.8 10.8 12 4.3l8.2 6.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.8 10v8.2h12.4V10" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.6 15.6l2.2-2.2 1.6 1.6 2.9-3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nm">김팀장의 시세랩</span></div>
+    <p class="sub">서울·경기·인천 시세 대시보드</p>
+
+    <div class="tabs">
+      <button id="tabLogin" class="on" onclick="setMode('login')">로그인</button>
+      <button id="tabSignup" onclick="setMode('signup')">회원가입</button>
+    </div>
+
+    <form id="form" onsubmit="return submitForm(event)">
+      <label for="email">이메일</label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+
+      <label for="pw">비밀번호</label>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="8자 이상" required />
+      <div class="hint" id="pwHint" style="display:none">영문·숫자 포함 8자 이상 권장</div>
+
+      <div id="pw2wrap" style="display:none">
+        <label for="pw2">비밀번호 확인</label>
+        <input id="pw2" type="password" autocomplete="new-password" placeholder="비밀번호 다시 입력" />
+      </div>
+
+      <button class="btn" id="submitBtn" type="submit">로그인</button>
+      <div class="msg" id="msg"></div>
+    </form>
+
+    <div class="div">또는</div>
+    <div class="soc">
+      <button class="k" disabled>💬 카카오로 시작 <span class="soon">준비 중</span></button>
+      <button class="n" disabled>Ⓝ 네이버로 시작 <span class="soon">준비 중</span></button>
+    </div>
+
+    <p class="foot"><a href="index.html">← 소개로 돌아가기</a></p>
+    <p class="demo">⚠️ 지금은 <b>데모 모드</b>입니다 — 계정은 이 브라우저에만 임시 저장되며 실제 서버로 전송되지 않습니다. 실제 이메일 인증은 추후 연동됩니다.</p>
+  </div>
+
+<script>
+  // ===== 설정 (나중에 실제 인증 연동 시 채움) =====
+  var DASHBOARD_URL = "app.html"; // 로그인 성공 후 이동 (서비스 대시보드 · 국토부 데이터만)
+  var SUPABASE_URL = "";   // TODO: Supabase 프로젝트 URL
+  var SUPABASE_ANON = "";  // TODO: Supabase anon key
+  // 위 두 값이 채워지면 데모(localStorage) 대신 실제 Supabase Auth로 전환 예정.
+
+  // ===== 관리자(데모용) =====
+  // ⚠️ 데모 흐름 확인용일 뿐. 실제 관리자 판별은 Supabase 역할(role)로 서버에서 처리해야 함
+  //    (클라이언트 코드의 목록은 누구나 볼 수 있으므로 공개 배포본에 실제 이메일을 넣지 말 것).
+  // 로컬 테스트: 아래에 본인 이메일을 넣으면 그 계정으로 로그인 시 '관리자'로 인식됩니다.
+  var ADMIN_EMAILS = [];   // ⚠️ 공개 배포본 — 관리자 판별은 추후 Supabase 서버 역할로(클라이언트 코드 노출 방지)
+  function isAdmin(email){ return ADMIN_EMAILS.map(function(e){return e.toLowerCase();}).indexOf(email) >= 0; }
+
+  var mode = "login";
+  function setMode(m){
+    mode = m;
+    document.getElementById("tabLogin").classList.toggle("on", m==="login");
+    document.getElementById("tabSignup").classList.toggle("on", m==="signup");
+    document.getElementById("pw2wrap").style.display = m==="signup" ? "block" : "none";
+    document.getElementById("pwHint").style.display = m==="signup" ? "block" : "none";
+    document.getElementById("submitBtn").textContent = m==="signup" ? "회원가입" : "로그인";
+    document.getElementById("pw").setAttribute("autocomplete", m==="signup" ? "new-password" : "current-password");
+    hideMsg();
+  }
+  function show(type, text){ var el=document.getElementById("msg"); el.className="msg "+type; el.textContent=text; }
+  function hideMsg(){ document.getElementById("msg").className="msg"; }
+
+  // ---- 데모 저장소 (localStorage) ----
+  function accounts(){ try{ return JSON.parse(localStorage.getItem("sise-accounts")||"{}"); }catch(e){ return {}; } }
+  function saveAccounts(a){ try{ localStorage.setItem("sise-accounts", JSON.stringify(a)); }catch(e){} }
+
+  function submitForm(e){
+    e.preventDefault();
+    var email = document.getElementById("email").value.trim().toLowerCase();
+    var pw = document.getElementById("pw").value;
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ show("err","이메일 형식을 확인해 주세요."); return false; }
+    if(pw.length < 8){ show("err","비밀번호는 8자 이상이어야 합니다."); return false; }
+
+    var acc = accounts();
+    if(mode==="signup"){
+      var pw2 = document.getElementById("pw2").value;
+      if(pw !== pw2){ show("err","비밀번호가 일치하지 않습니다."); return false; }
+      if(acc[email]){ show("err","이미 가입된 이메일입니다. 로그인해 주세요."); return false; }
+      acc[email] = { pw: pw, joined: new Date().toISOString() };
+      saveAccounts(acc);
+      show("ok","가입 완료! 대시보드로 이동합니다…");
+      afterAuth(email); return false;
+    } else {
+      if(!acc[email]){ show("err","가입되지 않은 이메일입니다. 회원가입을 먼저 해주세요."); return false; }
+      if(acc[email].pw !== pw){ show("err","비밀번호가 올바르지 않습니다."); return false; }
+      show("ok","로그인되었습니다. 이동합니다…");
+      afterAuth(email); return false;
+    }
+  }
+  function afterAuth(email){
+    var role = isAdmin(email) ? "admin" : "member";
+    try{ localStorage.setItem("sise-session", JSON.stringify({ email: email, role: role, at: Date.now() })); }catch(e){}
+    if(role === "admin"){ show("ok","👑 관리자로 로그인되었습니다. 이동합니다…"); }
+    setTimeout(function(){ window.location.href = DASHBOARD_URL; }, 700);
+  }
+
+  // 테마 저장 반영
+  try{ var t=localStorage.getItem("aptland-theme"); if(t) document.documentElement.setAttribute("data-theme", t); }catch(e){}
+</script>
+</body>
+</html>

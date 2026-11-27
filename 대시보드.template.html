@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>시세 대시보드 · 김팀장의 시세랩</title>
+<meta name="description" content="국토부 실거래 기반 서울·경기·인천 아파트 시세 대시보드 (김팀장의 시세랩 서비스)" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#F7F5F1; --panel:#ffffff; --ink:#2b2622; --sub:#6f6456; --mut:#a79e8f;
+    --line:#ece7df; --brand:#3E5676; --brand2:#5A7BA8; --accent:#8a7655; --warm:#8F7B5B;
+    --card-shadow:0 1px 2px rgba(56,48,36,.04), 0 6px 18px rgba(56,48,36,.05); --nav-bg:rgba(255,255,255,.82);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --bg:#161e2a; --bg2:#121a25; --panel:#1c2531; --ink:#f3efe8; --sub:#c7cdd6; --mut:#8a93a1;
+    --line:rgba(255,255,255,.08); --accent:#C8BCA8; --warm:#AD9B7F; --card-shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.45); --nav-bg:rgba(22,30,42,.82);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#161e2a; --bg2:#121a25; --panel:#1c2531; --ink:#f3efe8; --sub:#c7cdd6; --mut:#8a93a1;
+    --line:rgba(255,255,255,.08); --accent:#C8BCA8; --warm:#AD9B7F; --card-shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.45); --nav-bg:rgba(22,30,42,.82);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg); color:var(--ink); font-size:15px; letter-spacing:-.01em; font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px; margin:0 auto; padding:0 18px}
+
+  nav.bar{position:sticky; top:0; z-index:30; background:var(--nav-bg); backdrop-filter:blur(12px); border-bottom:1px solid var(--line)}
+  .bar-in{max-width:960px; margin:0 auto; padding:11px 18px; display:flex; align-items:center; gap:14px}
+  .brand{display:flex; align-items:center; gap:9px; font-weight:800}
+  .mark{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:900;background:linear-gradient(135deg,#18212E,#3E5676 60%,#5A7BA8)}
+  .brand .nm{font-size:15px}
+  .spacer{margin-left:auto}
+  .chip{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--sub); background:var(--panel); border:1px solid var(--line); padding:6px 11px; border-radius:999px; max-width:46vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .role{font-size:10.5px; font-weight:800; padding:2px 7px; border-radius:999px}
+  .role.admin{background:linear-gradient(135deg,#8F7B5B,#61533D); color:#fff}
+  .role.member{background:rgba(62,86,118,.12); color:var(--brand)}
+  .logout{border:1px solid var(--line); background:var(--panel); color:var(--sub); font-size:12.5px; font-weight:700; padding:7px 12px; border-radius:10px; cursor:pointer}
+  .logout:hover{color:var(--ink)}
+
+  .tabwrap{position:sticky; top:55px; z-index:20; background:var(--nav-bg); backdrop-filter:blur(12px); border-bottom:1px solid var(--line)}
+  .tabs{max-width:960px; margin:0 auto; padding:8px 12px; display:flex; gap:4px; overflow-x:auto}
+  .tabs::-webkit-scrollbar{height:0}
+  .tabs button{flex:0 0 auto; border:0; background:transparent; color:var(--sub); font-size:13.5px; font-weight:700; padding:8px 14px; border-radius:10px; cursor:pointer; white-space:nowrap}
+  .tabs button:hover{color:var(--ink); background:var(--bg2)}
+  .tabs button.on{color:#fff; background:linear-gradient(135deg,#3E5676,#5A7BA8); box-shadow:0 4px 12px rgba(62,86,118,.28)}
+  .tabs button.adm.on{background:linear-gradient(135deg,#8F7B5B,#61533D); box-shadow:0 4px 12px rgba(143,123,91,.3)}
+
+  .panel{display:none; padding:26px 0}
+  .panel.on{display:block}
+  .phead{margin:0 0 4px; font-size:clamp(20px,3.5vw,26px); font-weight:800; letter-spacing:-.02em}
+  .phead::after{content:""; display:block; width:34px; height:3px; border-radius:2px; margin:11px 0 2px; background:linear-gradient(90deg,#3E5676,#8F7B5B)}
+  .psub{margin:0 0 20px; color:var(--sub); font-size:14.5px}
+
+  .search{background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:var(--card-shadow); padding:9px; display:flex; gap:8px; margin-bottom:18px}
+  .search input{flex:1; border:0; background:transparent; color:var(--ink); font-size:15px; padding:10px 12px; outline:none}
+  .search button{border:0; background:linear-gradient(135deg,#3E5676,#5A7BA8); color:#fff; font-weight:800; font-size:14px; padding:0 18px; border-radius:11px; cursor:pointer}
+
+  .map{position:relative; height:440px; border-radius:18px; overflow:hidden; border:1px solid var(--line); box-shadow:var(--card-shadow); margin-bottom:10px; background:var(--bg2)}
+  @media(max-width:640px){ .map{height:360px} }
+  .map-msg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; color:var(--mut); font-size:13.5px; line-height:1.7; background:var(--bg2); z-index:2}
+  .map-msg.hide{display:none}
+  .maphint{font-size:12px; color:var(--mut); margin:0 2px 20px}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px}
+  @media(max-width:640px){ .stats{grid-template-columns:repeat(2,1fr)} }
+  .stat{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px; text-align:center; box-shadow:var(--card-shadow)}
+  .stat .n{font-size:21px; font-weight:800; background:linear-gradient(90deg,var(--brand),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .l{font-size:12px; color:var(--sub); font-weight:600; margin-top:3px}
+
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px}
+  @media(max-width:640px){ .grid{grid-template-columns:1fr} }
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--card-shadow); padding:22px}
+  .card .ico{font-size:24px} .card h3{font-size:16px; font-weight:800; margin:10px 0 6px} .card p{margin:0; font-size:13.5px; color:var(--sub)}
+  .card.clk{cursor:pointer; transition:transform .12s, box-shadow .12s} .card.clk:hover{transform:translateY(-2px); box-shadow:0 10px 30px rgba(62,86,118,.14)}
+
+  .list{display:flex; flex-direction:column; gap:8px}
+  .row{display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px; cursor:pointer; transition:border-color .12s}
+  .row:hover{border-color:var(--brand)}
+  .row .nm{font-weight:700; font-size:14.5px}
+  .row .meta{font-size:12px; color:var(--mut)}
+  .row .right{margin-left:auto; text-align:right}
+  .row .val{font-weight:800; font-size:14.5px; color:var(--brand)}
+  .row .sub{font-size:11.5px; color:var(--mut)}
+  .badge{display:inline-block; font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px; background:rgba(62,86,118,.1); color:var(--brand)}
+  .badge.up{background:rgba(156,107,79,.14); color:#9c6b4f}
+  .pyeongs{display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 0}
+  .pyeongs button{border:1px solid var(--line); background:var(--panel); color:var(--sub); font-size:12px; font-weight:700; padding:5px 10px; border-radius:999px; cursor:pointer}
+  .pyeongs button.on{background:var(--brand); color:#fff; border-color:var(--brand)}
+
+  .detail{background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:var(--card-shadow); padding:22px; margin-top:16px}
+  .detail .top{display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap}
+  .detail h3{margin:0; font-size:19px; font-weight:800}
+  .detail .addr{font-size:13px; color:var(--mut); margin-top:2px}
+  .favbtn{margin-left:auto; border:1px solid var(--line); background:var(--panel); color:var(--accent); font-weight:800; font-size:13px; padding:7px 13px; border-radius:10px; cursor:pointer}
+  .metrics{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:16px 0}
+  @media(max-width:640px){ .metrics{grid-template-columns:repeat(2,1fr)} }
+  .metrics .m{background:var(--bg2); border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center}
+  .metrics .m .v{font-weight:800; font-size:17px} .metrics .m .k{font-size:11.5px; color:var(--sub); margin-top:2px}
+  .chartbox{height:260px; margin-top:8px}
+
+  .seg{display:inline-flex; background:var(--bg2); border:1px solid var(--line); border-radius:11px; padding:3px; margin-bottom:16px; flex-wrap:wrap}
+  .seg button{border:0; background:transparent; color:var(--sub); font-size:12.5px; font-weight:700; padding:7px 12px; border-radius:8px; cursor:pointer}
+  .seg button.on{background:var(--panel); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  .ph{height:200px; border-radius:14px; border:1px dashed var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--mut); font-size:13px; text-align:center; background:repeating-linear-gradient(45deg, transparent 0 12px, rgba(127,127,127,.03) 12px 24px)}
+  .ph .big{font-size:30px}
+  .empty{color:var(--mut); font-size:13.5px; text-align:center; padding:30px}
+  .adminbar{display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:linear-gradient(135deg, rgba(143,123,91,.12), rgba(97,83,61,.1)); border:1px solid rgba(143,123,91,.3); border-radius:16px; padding:16px 18px; margin-bottom:18px}
+  .adminbar b{color:var(--warm)} .adminbar .t{font-size:13.5px; color:var(--sub)}
+  footer{background:#18212E; color:#8a93a1; padding:28px 18px 38px; margin-top:18px; text-align:center}
+  .fbrand{display:inline-flex; align-items:center; gap:8px; color:#fff; font-weight:800; font-size:15px; margin-bottom:10px}
+  .fbrand .fm{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3E5676,#5A7BA8)}
+  .fline{font-size:12px; color:#8a93a1; max-width:660px; margin:0 auto 8px; line-height:1.6}
+  .fcp{font-size:11.5px; color:#6f7a88}
+</style>
+</head>
+<body>
+  <nav class="bar">
+    <div class="bar-in">
+      <span class="brand"><span class="mark"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M3.8 10.8 12 4.3l8.2 6.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.8 10v8.2h12.4V10" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.6 15.6l2.2-2.2 1.6 1.6 2.9-3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nm">김팀장의 시세랩</span></span>
+      <span class="spacer"></span>
+      <span class="chip" id="userChip">—</span>
+      <button class="logout" onclick="logout()">로그아웃</button>
+    </div>
+  </nav>
+
+  <div class="tabwrap"><div class="tabs" id="tabs"></div></div>
+
+  <div class="wrap">
+    <!-- 개요 -->
+    <section class="panel" data-tab="home">
+      <h2 class="phead" id="greet">환영합니다</h2>
+      <p class="psub" id="homeSub">국토부 공개 실거래 기반 · 서울·경기·인천 · 지도에서 단지를 눌러보세요</p>
+      <div class="search"><input id="q" placeholder="단지명으로 검색 (예: 헬리오시티)" onkeydown="if(event.key==='Enter')goReport()" /><button onclick="goReport()">검색</button></div>
+      <div class="map"><div id="homeMap" style="width:100%;height:100%"></div><div class="map-msg" id="homeMapMsg">카카오 지도 불러오는 중…</div></div>
+      <p class="maphint">📍 마커를 누르면 해당 단지의 국토부 실거래 리포트로 이동합니다. · 🎟️ 분양권 단지 포함</p>
+      <div class="stats" id="homeStats"></div>
+      <div class="grid">
+        <div class="card clk" onclick="showTab('report')"><div class="ico">🔎</div><h3>단지 리포트</h3><p>10년 실거래 추이·고점 대비 회복률</p></div>
+        <div class="card clk" onclick="showTab('highs')"><div class="ico">🔥</div><h3>이달의 신고가</h3><p id="homeHighs">이번 달 신고가 경신 거래</p></div>
+        <div class="card clk" onclick="showTab('ladder')"><div class="ico">🧗</div><h3>급지 사다리</h3><p>구/시별 대표단지·중위가</p></div>
+        <div class="card clk" onclick="showTab('band')"><div class="ico">📈</div><h3>가격대별 추이</h3><p>함께 움직인 단지 겹쳐보기</p></div>
+      </div>
+    </section>
+
+    <!-- 단지 리포트 -->
+    <section class="panel" data-tab="report">
+      <h2 class="phead">🔎 단지 리포트</h2>
+      <p class="psub">단지명을 검색하면 국토부 10년 실거래 중위가 추이와 2021 고점 대비 회복률을 봅니다.</p>
+      <div class="search"><input id="q2" placeholder="단지명으로 검색" onkeydown="if(event.key==='Enter')searchReport()" /><button onclick="searchReport()">검색</button></div>
+      <div id="reportResults" class="list"></div>
+      <div id="reportDetail"></div>
+    </section>
+
+    <!-- 가격대별 추이 -->
+    <section class="panel" data-tab="band">
+      <h2 class="phead">📈 가격대별 추이</h2>
+      <p class="psub">비슷한 가격대에서 함께 움직여 온 단지들의 흐름입니다. (쌍둥이 분석)</p>
+      <div class="ph"><span class="big">📈</span><div><b>가격대별 추이 — 다음 단계</b><br>쌍둥이 동행 차트(용량 큼)는 별도로 이어서 채웁니다</div></div>
+    </section>
+
+    <!-- 이달의 신고가 -->
+    <section class="panel" data-tab="highs">
+      <h2 class="phead">🔥 이달의 신고가</h2>
+      <p class="psub">국토부 실거래에서 신고가를 경신한 거래가 많았던 지역입니다.</p>
+      <div class="seg" id="highsSeg"></div>
+      <div class="stats" id="highsStats"></div>
+      <div id="highsList" class="list"></div>
+    </section>
+
+    <!-- 급지 사다리 -->
+    <section class="panel" data-tab="ladder">
+      <h2 class="phead">🧗 급지 사다리</h2>
+      <p class="psub">구/시별 84㎡ 중위 실거래가 순으로, 대표단지(최고 평당가)와 함께 봅니다.</p>
+      <div id="ladderList" class="list"></div>
+    </section>
+
+    <!-- 지도 -->
+    <section class="panel" data-tab="map">
+      <h2 class="phead">🗺️ 지도</h2>
+      <p class="psub">서울·경기·인천 단지 위치와 실거래를 지도에서 봅니다.</p>
+      <div class="ph"><span class="big">🗺️</span><div><b>지도 — 다음 단계</b><br>단지 좌표·실거래 지도는 별도로 이어서 채웁니다</div></div>
+    </section>
+
+    <!-- 관심 단지 -->
+    <section class="panel" data-tab="fav">
+      <h2 class="phead">⭐ 관심 단지</h2>
+      <p class="psub">단지 리포트에서 ⭐로 담은 단지입니다. (이 기기에만 저장)</p>
+      <div id="favList" class="list"></div>
+    </section>
+
+    <!-- 데이터 관리 (관리자) -->
+    <section class="panel" data-tab="admin">
+      <h2 class="phead">🛠️ 데이터 관리 <span class="role admin" style="vertical-align:middle">관리자</span></h2>
+      <p class="psub">관리자에게만 보이는 탭입니다.</p>
+      <div class="adminbar"><div><b>👑 관리자 모드</b> <span class="t">— 일반 회원에게는 이 탭이 보이지 않습니다.</span></div></div>
+      <div class="stats" id="adminStats"></div>
+      <div class="ph"><span class="big">🛠️</span><div><b>데이터 관리 — 다음 단계</b><br>실거래 갱신·단지 추가·공개 설정이 들어갑니다</div></div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="fbrand"><span class="fm"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true"><path d="M3.8 10.8 12 4.3l8.2 6.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.8 10v8.2h12.4V10" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.6 15.6l2.2-2.2 1.6 1.6 2.9-3" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>김팀장의 시세랩</div>
+    <div class="fline">국토교통부 실거래가 기반(계약해제 건 제외) · 참고용 · 투자 판단의 책임은 이용자 본인에게 있습니다</div>
+    <div class="fcp">© 2026 김팀장의 시세랩</div>
+  </footer>
+
+<script id="svc-data" type="application/json">__SVC_DATA__</script>
+<script>
+  try{ var t=localStorage.getItem("aptland-theme"); if(t) document.documentElement.setAttribute("data-theme", t); }catch(e){}
+
+  // ===== 로그인 게이트 =====
+  var session=null; try{ session=JSON.parse(localStorage.getItem("sise-session")||"null"); }catch(e){}
+  if(!session || !session.email){ window.location.replace("login.html"); }
+  var isAdmin = session && session.role==="admin";
+
+  // ===== 데이터 =====
+  var SVC = {}; try{ SVC = JSON.parse(document.getElementById("svc-data").textContent)||{}; }catch(e){ SVC={}; }
+  var ROWS = SVC.reports||[], HIGHS = SVC.highs||null, LADDER = SVC.ladder||[], PRESALE = SVC.presale||[];
+  var PINS = SVC.pins||[], KAKAO_KEY = SVC.kakaoKey||"";
+  var won = function(eok){ return eok>=1 ? eok.toFixed(1)+"억" : Math.round(eok*100)+"만"; }; // 억 단위 입력
+  var eok = function(man){ return man/100; };            // 백만원 → 억
+  var eokFromWon = function(w){ return w/100000000; };   // 원 → 억
+  var CUR = { fav: loadFav() };
+
+  if(session && session.email){
+    document.getElementById("greet").textContent = "안녕하세요, " + session.email.split("@")[0] + "님";
+    document.getElementById("userChip").innerHTML =
+      session.email + ' <span class="role ' + (isAdmin?"admin":"member") + '">' + (isAdmin?"👑 관리자":"회원") + '</span>';
+  }
+
+  // ===== 탭 =====
+  var TABS=[
+    {k:"home",label:"🏠 개요"},{k:"report",label:"🔎 단지 리포트"},{k:"band",label:"📈 가격대별 추이"},
+    {k:"highs",label:"🔥 이달의 신고가"},{k:"ladder",label:"🧗 급지 사다리"},{k:"map",label:"🗺️ 지도"},
+    {k:"fav",label:"⭐ 관심 단지"},{k:"admin",label:"🛠️ 데이터 관리",admin:true}
+  ];
+  var tabsEl=document.getElementById("tabs");
+  TABS.forEach(function(t){ if(t.admin&&!isAdmin)return; var b=document.createElement("button"); b.textContent=t.label; b.dataset.k=t.k; if(t.admin)b.classList.add("adm"); b.onclick=function(){showTab(t.k);}; tabsEl.appendChild(b); });
+  function showTab(k){
+    document.querySelectorAll(".panel").forEach(function(p){ p.classList.toggle("on", p.dataset.tab===k); });
+    tabsEl.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.k===k); });
+    if(k==="fav") renderFav();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  // ===== 개요 =====
+  (function home(){
+    var uniq={}, prov={}; ROWS.forEach(function(r){ uniq[r.r+"|"+r.u+"|"+r.n]=1; prov[provOf(r.r)]=1; });
+    var nComplex=Object.keys(uniq).length;
+    var latest = HIGHS? HIGHS.latest : "-";
+    var hCount = (HIGHS&&HIGHS.data&&HIGHS.data[latest])? HIGHS.data[latest].count : 0;
+    document.getElementById("homeStats").innerHTML =
+      stat(nComplex.toLocaleString(),"추적 단지") + stat(ROWS.length.toLocaleString(),"단지×평형") +
+      stat("서울·경기·인천","커버 지역") + stat(SVC.generated||"-","데이터 기준");
+    document.getElementById("homeHighs").textContent = latest+" 신고가 "+hCount.toLocaleString()+"건";
+  })();
+  // 통계 카운트업 (홈과 동일 시그니처)
+  (function(){
+    var els=document.querySelectorAll("#homeStats .n");
+    Array.prototype.forEach.call(els, function(el){
+      var m=el.textContent.match(/^([\d,]+)(\+?)$/); if(!m) return;
+      var target=+m[1].replace(/,/g,""), suf=m[2]||"", t0=null; el.textContent="0"+suf;
+      function step(ts){ if(!t0)t0=ts; var k=Math.min((ts-t0)/1000,1); var v=Math.floor((1-Math.pow(1-k,3))*target); el.textContent=v.toLocaleString()+suf; if(k<1)requestAnimationFrame(step); }
+      requestAnimationFrame(step);
+    });
+  })();
+  function provOf(region){ return /구$/.test(region)&&!/시/.test(region)?"서울·인천":"경기"; }
+  function stat(n,l){ return '<div class="stat"><div class="n">'+n+'</div><div class="l">'+l+'</div></div>'; }
+
+  // ===== 단지 리포트 =====
+  function goReport(){ var q=document.getElementById("q").value.trim(); document.getElementById("q2").value=q; showTab("report"); searchReport(); }
+  function esc(s){ return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function searchReport(){
+    var q=document.getElementById("q2").value.trim().toLowerCase();
+    var box=document.getElementById("reportResults"); document.getElementById("reportDetail").innerHTML="";
+    if(!q){ box.innerHTML='<div class="empty">단지명을 입력해 검색하세요.</div>'; return; }
+    // 국토부 단지(평형 단위로 묶기)
+    var groups={};
+    for(var i=0;i<ROWS.length;i++){ var r=ROWS[i]; if(r.n.toLowerCase().indexOf(q)<0) continue;
+      var key=r.r+"|"+r.u+"|"+r.n; (groups[key]=groups[key]||{r:r, rows:[]}).rows.push(r); if(Object.keys(groups).length>60)break; }
+    var keys=Object.keys(groups);
+    // 분양권 단지(미준공 · 국토부 실거래 전)
+    var psMatch=[]; for(var j=0;j<PRESALE.length;j++){ if((PRESALE[j].n||"").toLowerCase().indexOf(q)>=0) psMatch.push(PRESALE[j]); if(psMatch.length>=20)break; }
+    if(!keys.length && !psMatch.length){ box.innerHTML='<div class="empty">검색 결과가 없습니다.</div>'; return; }
+    box.dataset.groups = JSON.stringify(Object.keys(groups).reduce(function(o,k){o[k]=groups[k].rows.map(function(x){return x;});return o;},{}));
+    box.dataset.presale = JSON.stringify(psMatch);
+    var psHtml = psMatch.map(function(p,idx){
+      return '<div class="row" onclick="openPresale('+idx+')"><div><div class="nm">'+esc(p.n)+' <span class="badge up">🎟️ 분양권</span></div><div class="meta">'+esc(p.prov||"")+' '+esc(p.r||"")+(p.moveIn?' · 입주예정 '+esc(p.moveIn):'')+'</div></div><div class="right"><div class="val">'+(p.supply?eokFromWon(p.supply).toFixed(1)+'억':'미준공')+'</div><div class="sub">'+(p.supply?'공급가':'분양권')+'</div></div></div>';
+    }).join("");
+    var crHtml = keys.slice(0,40).map(function(key){ var g=groups[key],r=g.r;
+      return '<div class="row" onclick="openComplex(\''+esc(key).replace(/'/g,"")+'\')"><div><div class="nm">'+esc(r.n)+'</div><div class="meta">'+esc(r.r)+' '+esc(r.u)+' · '+g.rows.length+'개 평형</div></div><div class="right"><div class="val">'+won(eok(r.c))+'</div><div class="sub">현재 중위 '+r.a+'㎡</div></div></div>';
+    }).join("");
+    box.innerHTML = psHtml + crHtml;
+  }
+  function openPresale(i){
+    var arr=JSON.parse(document.getElementById("reportResults").dataset.presale||"[]"); var p=arr[i]; if(!p)return;
+    var html=''+
+      '<div class="detail"><div class="top"><div><h3>'+esc(p.n)+' <span class="badge up" style="vertical-align:middle">🎟️ 분양권</span></h3>'+
+      '<div class="addr">'+esc(p.prov||"")+' '+esc(p.r||"")+'</div></div></div>'+
+      '<div class="metrics">'+
+        '<div class="m"><div class="v">'+(p.supply?eokFromWon(p.supply).toFixed(1)+'억':'-')+'</div><div class="k">공급가(분양가)</div></div>'+
+        '<div class="m"><div class="v">'+(p.size?p.size+'㎡':'-')+'</div><div class="k">평형</div></div>'+
+        '<div class="m"><div class="v" style="font-size:14px">'+(p.moveIn||'-')+'</div><div class="k">입주 예정</div></div>'+
+        '<div class="m"><div class="v" style="font-size:14px">미준공</div><div class="k">상태</div></div>'+
+      '</div>'+
+      '<div style="font-size:11.5px;color:var(--mut);margin-top:10px">※ 미준공 분양권 단지입니다. 공급가는 공개 분양정보 기준이며, 프리미엄·실거래는 추후 <b>국토부 분양권 실거래</b>로 연결 예정입니다.</div></div>';
+    document.getElementById("reportDetail").innerHTML=html;
+    window.scrollTo({top:document.getElementById("reportDetail").offsetTop-70,behavior:"smooth"});
+  }
+  function openComplex(key){
+    var groups=JSON.parse(document.getElementById("reportResults").dataset.groups||"{}");
+    var rows=groups[key]; if(!rows||!rows.length)return;
+    rows.sort(function(a,b){return a.a-b.a;});
+    CUR.key=key; CUR.rows=rows; CUR.sel=0;
+    renderDetail();
+  }
+  function renderDetail(){
+    var rows=CUR.rows, r=rows[CUR.sel];
+    var years=[]; for(var i=0;i<r.s.length;i++) years.push((r.y0+i));
+    var cur=r.s[r.s.length-1], peakIdx=(SVC.peakYear-r.y0), peak=(peakIdx>=0&&peakIdx<r.s.length)?r.s[peakIdx]:Math.max.apply(null,r.s);
+    var recov=peak? (cur/peak*100):0;
+    var faved=CUR.fav[CUR.key]?true:false;
+    var pyeongBtns=rows.map(function(x,i){ return '<button class="'+(i===CUR.sel?"on":"")+'" onclick="selPy('+i+')">'+Math.round(x.a/3.3058)+'평('+x.a+'㎡)</button>'; }).join("");
+    var html=''+
+      '<div class="detail"><div class="top"><div><h3>'+esc(r.n)+'</h3><div class="addr">'+esc(r.r)+' '+esc(r.u)+' · 준공 '+(r.b||"-")+' · '+(r.h?r.h+"세대":"세대미상")+'</div></div>'+
+      '<button class="favbtn" onclick="toggleFav()">'+(faved?"★ 담김":"☆ 관심")+'</button></div>'+
+      '<div class="pyeongs">'+pyeongBtns+'</div>'+
+      '<div class="metrics">'+
+        '<div class="m"><div class="v">'+won(eok(cur))+'</div><div class="k">현재 중위가</div></div>'+
+        '<div class="m"><div class="v">'+won(eok(r.m||cur))+'</div><div class="k">최고 실거래</div></div>'+
+        '<div class="m"><div class="v" style="color:'+(recov>=100?"#9c6b4f":"var(--brand)")+'">'+recov.toFixed(0)+'%</div><div class="k">'+SVC.peakYear+' 대비</div></div>'+
+        '<div class="m"><div class="v">'+(r.d||"-")+'</div><div class="k">누적 거래</div></div>'+
+      '</div>'+
+      '<div class="chartbox"><canvas id="repChart"></canvas></div>'+
+      '<div style="font-size:11.5px;color:var(--mut);margin-top:10px">※ 국토부 실거래 연도별 중위가(억). 계약해제 건 제외.</div></div>';
+    document.getElementById("reportDetail").innerHTML=html;
+    drawChart(years, r.s.map(function(v){return (v/100);}));
+  }
+  var repChart=null;
+  function drawChart(labels, data){
+    if(!window.Chart){ return; }
+    var ctx=document.getElementById("repChart"); if(!ctx)return;
+    if(repChart) repChart.destroy();
+    var dark=document.documentElement.getAttribute("data-theme")==="dark" || (window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.getAttribute("data-theme")!=="light");
+    var grid=dark?"rgba(255,255,255,.08)":"rgba(56,48,36,.08)", tick=dark?"#c7cdd6":"#6f6456";
+    repChart=new Chart(ctx,{type:"line",data:{labels:labels,datasets:[{data:data,borderColor:"#3E5676",backgroundColor:"rgba(62,86,118,.12)",borderWidth:2.5,pointRadius:3,pointBackgroundColor:"#3E5676",tension:.25,fill:true}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.parsed.y.toFixed(1)+"억";}}}},
+        scales:{x:{grid:{color:grid},ticks:{color:tick}},y:{grid:{color:grid},ticks:{color:tick,callback:function(v){return v+"억";}}}}}});
+  }
+  function selPy(i){ CUR.sel=i; renderDetail(); }
+
+  // ===== 관심 단지 =====
+  function loadFav(){ try{ return JSON.parse(localStorage.getItem("sise-fav")||"{}"); }catch(e){ return {}; } }
+  function saveFav(){ try{ localStorage.setItem("sise-fav", JSON.stringify(CUR.fav)); }catch(e){} }
+  function toggleFav(){ var r=CUR.rows[0]; if(CUR.fav[CUR.key]) delete CUR.fav[CUR.key]; else CUR.fav[CUR.key]={n:r.n,r:r.r,u:r.u,c:r.c,a:r.a}; saveFav(); renderDetail(); }
+  function renderFav(){
+    var keys=Object.keys(CUR.fav); var box=document.getElementById("favList");
+    if(!keys.length){ box.innerHTML='<div class="empty">아직 담은 단지가 없어요. 단지 리포트에서 ☆를 눌러 담아보세요.</div>'; return; }
+    box.innerHTML=keys.map(function(k){ var f=CUR.fav[k];
+      return '<div class="row" onclick="fromFav(\''+k.replace(/'/g,"")+'\')"><div><div class="nm">'+esc(f.n)+'</div><div class="meta">'+esc(f.r)+' '+esc(f.u)+'</div></div><div class="right"><div class="val">'+won(eok(f.c))+'</div><div class="sub">'+f.a+'㎡</div></div></div>';
+    }).join("");
+  }
+  function fromFav(key){ document.getElementById("q2").value=CUR.fav[key]?CUR.fav[key].n:""; showTab("report"); searchReport(); }
+
+  // ===== 이달의 신고가 =====
+  (function highs(){
+    if(!HIGHS||!HIGHS.months){ document.getElementById("highsList").innerHTML='<div class="empty">데이터 없음</div>'; return; }
+    var seg=document.getElementById("highsSeg");
+    var months=HIGHS.months.slice().reverse();
+    seg.innerHTML=months.map(function(m,i){ return '<button class="'+(i===0?"on":"")+'" data-m="'+m+'" onclick="selHighs(\''+m+'\')">'+m+'</button>'; }).join("");
+    selHighs(months[0]);
+  })();
+  function selHighs(m){
+    document.querySelectorAll("#highsSeg button").forEach(function(b){ b.classList.toggle("on", b.dataset.m===m); });
+    var d=HIGHS.data[m]; if(!d){ return; }
+    document.getElementById("highsStats").innerHTML = stat((d.count||0).toLocaleString(),"신고가 거래")+stat((d.seoul||0).toLocaleString(),"서울")+stat((d.gyeonggi||0).toLocaleString(),"경기·인천")+stat((d.regionTop?d.regionTop.length:0)+"곳","집계 지역");
+    var top=(d.regionTop||[]).slice(0,20);
+    document.getElementById("highsList").innerHTML = top.length? top.map(function(t,i){ return '<div class="row" style="cursor:default"><div><div class="nm">'+(i+1)+'. '+esc(t[0])+'</div></div><div class="right"><div class="val">'+t[1]+'건</div></div></div>'; }).join("") : '<div class="empty">집계 없음</div>';
+  }
+
+  // ===== 급지 사다리 =====
+  (function ladder(){
+    var box=document.getElementById("ladderList");
+    if(!LADDER.length){ box.innerHTML='<div class="empty">데이터 없음</div>'; return; }
+    var sorted=LADDER.slice().sort(function(a,b){return (b.med84||0)-(a.med84||0);});
+    box.innerHTML=sorted.map(function(r,i){ var ch=r.champ;
+      return '<div class="row" style="cursor:default"><div><div class="nm">'+(i+1)+'. '+esc(r.prov)+' '+esc(r.region)+'</div><div class="meta">'+(ch?'대표: '+esc(ch.name):'')+'</div></div><div class="right"><div class="val">'+eokFromWon(r.med84).toFixed(1)+'억</div><div class="sub">84㎡ 중위'+(ch?' · 대표 '+eokFromWon(ch.price).toFixed(1)+'억':'')+'</div></div></div>';
+    }).join("");
+  })();
+
+  // ===== 관리자 =====
+  if(isAdmin){ document.getElementById("adminStats").innerHTML = stat(ROWS.length.toLocaleString(),"단지×평형")+stat((HIGHS?HIGHS.months.length:0)+"개월","신고가 집계")+stat(LADDER.length+"곳","급지 구/시")+stat(SVC.generated||"-","기준"); }
+
+  function logout(){ try{ localStorage.removeItem("sise-session"); }catch(e){} window.location.href="login.html"; }
+
+  // ===== 카카오 지도 (첫 화면) =====
+  function mapMsg(t){ var m=document.getElementById("homeMapMsg"); if(m){ m.classList.remove("hide"); m.innerHTML=t; } }
+  var kakaoInited=false;
+  function initKakaoMap(){
+    if(kakaoInited) return; kakaoInited=true;
+    if(!KAKAO_KEY){ mapMsg("카카오 지도 키가 설정되지 않았습니다."); return; }
+    var s=document.createElement("script");
+    s.src="//dapi.kakao.com/v2/maps/sdk.js?appkey="+KAKAO_KEY+"&autoload=false&libraries=clusterer";
+    s.onerror=function(){ mapMsg("카카오 지도를 불러오지 못했습니다.<br>로컬 파일(file://)에서는 도메인 제한으로 안 보일 수 있어요.<br>serve.mjs로 로컬 서버를 띄우고 그 주소를 카카오 도메인에 등록하면 표시됩니다."); };
+    s.onload=function(){
+      if(typeof kakao==="undefined" || !kakao.maps){ mapMsg("카카오 지도 로드 실패(도메인 제한일 수 있어요)."); return; }
+      try{ kakao.maps.load(drawKakao); }catch(e){ mapMsg("카카오 지도 초기화 오류."); }
+    };
+    document.head.appendChild(s);
+  }
+  function drawKakao(){
+    var el=document.getElementById("homeMap"); if(!el){ return; }
+    var map=new kakao.maps.Map(el, { center:new kakao.maps.LatLng(37.54,127.02), level:9 });
+    map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+    var clusterer=new kakao.maps.MarkerClusterer({ map:map, averageCenter:true, minLevel:7, gridSize:70 });
+    var markers=[];
+    for(var i=0;i<PINS.length;i++){ (function(p){
+      if(!p.lat||!p.lng) return;
+      var mk=new kakao.maps.Marker({ position:new kakao.maps.LatLng(p.lat,p.lng), title:p.n });
+      kakao.maps.event.addListener(mk,"click",function(){ document.getElementById("q2").value=p.n; showTab("report"); searchReport(); });
+      markers.push(mk);
+    })(PINS[i]); }
+    clusterer.addMarkers(markers);
+    document.getElementById("homeMapMsg").classList.add("hide");
+  }
+
+  showTab("home");
+  initKakaoMap();
+</script>
+</body>
+</html>
