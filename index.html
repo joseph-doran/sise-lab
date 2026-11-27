@@ -249,6 +249,10 @@
   .mock-stats>div{background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:9px 5px}
   .ms-n{font-size:14.5px; font-weight:800; color:var(--brand); letter-spacing:-.02em}
   .ms-n.up{color:#3f8f6e} .ms-l{font-size:10px; color:var(--mut); margin-top:2px}
+  /* 지도 플레이스홀더 */
+  .mapmock{display:none; line-height:0}
+  .mapmock svg{display:block; width:100%; height:auto}
+  .mapimg{display:block; width:100%; height:auto}
 </style>
 </head>
 <body>
@@ -304,26 +308,24 @@
 
     <div class="hshot">
       <div class="frame">
-        <div class="top"><i></i><i></i><i></i><span class="url">임장플러스 · 온라인 임장</span></div>
-        <div class="mock">
-          <div class="mock-head"><div><div class="mh-t">단지 리포트</div><div class="mh-s">국토부 10년 실거래 · 84㎡</div></div><span class="mh-badge">⭐ 관심</span></div>
-          <div class="mock-chips"><span class="mc on">84㎡</span><span class="mc">59㎡</span><span class="mc">110㎡</span></div>
-          <div class="mock-chart">
-            <svg viewBox="0 0 300 120" width="100%" height="118" preserveAspectRatio="none" aria-hidden="true">
-              <defs><linearGradient id="mg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5A7BA8" stop-opacity=".30"/><stop offset="1" stop-color="#5A7BA8" stop-opacity="0"/></linearGradient></defs>
-              <line x1="0" y1="34" x2="300" y2="34" stroke="rgba(130,130,130,.14)" stroke-width="1"/>
-              <line x1="0" y1="68" x2="300" y2="68" stroke="rgba(130,130,130,.14)" stroke-width="1"/>
-              <line x1="0" y1="102" x2="300" y2="102" stroke="rgba(130,130,130,.14)" stroke-width="1"/>
-              <path d="M0,96 L33,80 L66,66 L100,48 L133,34 L166,52 L200,62 L233,46 L266,30 L300,22 L300,120 L0,120 Z" fill="url(#mg)"/>
-              <polyline points="0,96 33,80 66,66 100,48 133,34 166,52 200,62 233,46 266,30 300,22" fill="none" stroke="#5A7BA8" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
-              <circle cx="300" cy="22" r="3.6" fill="#3E5676"/>
-            </svg>
-          </div>
-          <div class="mock-stats">
-            <div><div class="ms-n">18.9억</div><div class="ms-l">최근 실거래</div></div>
-            <div><div class="ms-n up">92%</div><div class="ms-l">고점 대비 회복</div></div>
-            <div><div class="ms-n">2건</div><div class="ms-l">이달 신고가</div></div>
-          </div>
+        <div class="top"><i></i><i></i><i></i><span class="url">임장플러스 · 지도</span></div>
+        <img class="mapimg" src="assets/map-hero.png" alt="임장플러스 지도" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+        <div class="mapmock">
+          <svg viewBox="0 0 400 300" width="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <rect width="400" height="300" fill="#e9edf1"/>
+            <rect x="-10" y="20" width="150" height="110" rx="10" fill="#dde7de"/>
+            <rect x="255" y="185" width="165" height="130" rx="12" fill="#d6e2ee"/>
+            <path d="M-20 165 Q120 140 210 185 T430 170" stroke="#d2dae4" stroke-width="26" fill="none"/>
+            <path d="M70 -10 V320" stroke="#ffffff" stroke-width="9"/>
+            <path d="M210 -10 V320" stroke="#ffffff" stroke-width="7"/>
+            <path d="M-10 110 H410" stroke="#ffffff" stroke-width="9"/>
+            <path d="M-10 230 H410" stroke="#ffffff" stroke-width="6"/>
+            <path d="M70 230 L210 110 L340 150" stroke="#ffffff" stroke-width="4" fill="none"/>
+            <g transform="translate(150 118) scale(.9)"><path d="M0 0c-9 0-16 7-16 16 0 11 16 28 16 28s16-17 16-28c0-9-7-16-16-16z" fill="#3E5676"/><circle cx="0" cy="16" r="6" fill="#fff"/></g>
+            <g transform="translate(262 92) scale(.72)"><path d="M0 0c-9 0-16 7-16 16 0 11 16 28 16 28s16-17 16-28c0-9-7-16-16-16z" fill="#8F7B5B"/><circle cx="0" cy="16" r="6" fill="#fff"/></g>
+            <g transform="translate(318 206) scale(.72)"><path d="M0 0c-9 0-16 7-16 16 0 11 16 28 16 28s16-17 16-28c0-9-7-16-16-16z" fill="#5A7BA8"/><circle cx="0" cy="16" r="6" fill="#fff"/></g>
+            <g transform="translate(95 212) scale(.6)"><path d="M0 0c-9 0-16 7-16 16 0 11 16 28 16 28s16-17 16-28c0-9-7-16-16-16z" fill="#5A7BA8"/><circle cx="0" cy="16" r="6" fill="#fff"/></g>
+          </svg>
         </div>
       </div>
     </div>
