@@ -178,13 +178,6 @@
       <div id="ladderList" class="list"></div>
     </section>
 
-    <!-- 지도 -->
-    <section class="panel" data-tab="map">
-      <h2 class="phead">🗺️ 지도</h2>
-      <p class="psub">서울·경기·인천 단지 위치와 실거래를 지도에서 봅니다.</p>
-      <div class="ph"><span class="big">🗺️</span><div><b>지도 — 다음 단계</b><br>단지 좌표·실거래 지도는 별도로 이어서 채웁니다</div></div>
-    </section>
-
     <!-- 관심 단지 -->
     <section class="panel" data-tab="fav">
       <h2 class="phead">⭐ 관심 단지</h2>
@@ -234,8 +227,8 @@
 
   // ===== 탭 =====
   var TABS=[
-    {k:"home",label:"🏠 개요"},{k:"report",label:"🔎 단지 리포트"},{k:"band",label:"📈 가격대별 추이"},
-    {k:"highs",label:"🔥 이달의 신고가"},{k:"ladder",label:"🧗 급지 사다리"},{k:"map",label:"🗺️ 지도"},
+    {k:"home",label:"🗺️ 지도"},{k:"report",label:"🔎 단지 리포트"},{k:"band",label:"📈 가격대별 추이"},
+    {k:"highs",label:"🔥 이달의 신고가"},{k:"ladder",label:"🧗 급지 사다리"},
     {k:"fav",label:"⭐ 관심 단지"},{k:"admin",label:"🛠️ 데이터 관리",admin:true}
   ];
   var tabsEl=document.getElementById("tabs");
