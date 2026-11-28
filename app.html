@@ -71,6 +71,31 @@
   .mapsearch input{flex:1; min-width:0; border:0; background:transparent; color:var(--ink); font-size:14px; padding:9px 10px; outline:none; font-family:inherit}
   .mapsearch button{flex:0 0 auto; border:0; background:linear-gradient(135deg,#3E5676,#5A7BA8); color:#fff; border-radius:10px; padding:0 15px; font-size:15px; cursor:pointer}
   .maphint2{position:absolute; bottom:12px; left:50%; transform:translateX(-50%); z-index:10; background:var(--panel); color:var(--mut); font-size:11.5px; font-weight:600; padding:6px 12px; border-radius:999px; box-shadow:0 4px 14px rgba(0,0,0,.14); white-space:nowrap; max-width:94%; overflow:hidden; text-overflow:ellipsis}
+  /* 단지 알약 핀 (임장플러스와 동일 규칙: 카카오 장소검색으로 정확 위치 보정) */
+  .imj-cx{display:inline-block; white-space:nowrap; font-size:11.5px; font-weight:800; line-height:1; color:#fff; background:#3E5676; border:1.5px solid #fff; padding:4px 8px; border-radius:999px; box-shadow:0 2px 7px rgba(24,33,46,.34); cursor:pointer; letter-spacing:-.02em; transition:transform .08s}
+  .imj-cx:hover{transform:scale(1.06); z-index:5}
+  .imj-cx.pre{background:#8F7B5B; box-shadow:0 2px 7px rgba(97,83,61,.4)}
+  .imj-cx.sel{outline:2px solid #5A7BA8; outline-offset:1px; transform:scale(1.08)}
+  /* 지도 오른쪽 in-box 단지 정보 패널 */
+  .cxpanel{position:absolute; top:12px; right:12px; bottom:12px; z-index:14; width:min(340px,86vw); background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.22); overflow:auto; padding:0; transform:translateX(calc(100% + 20px)); transition:transform .22s cubic-bezier(.2,.8,.2,1); opacity:0; pointer-events:none}
+  .cxpanel.on{transform:none; opacity:1; pointer-events:auto}
+  .cxph{position:sticky; top:0; background:linear-gradient(135deg,#18212E,#3E5676 70%,#5A7BA8); color:#fff; padding:15px 16px 14px; border-radius:16px 16px 0 0}
+  .cxph .cxclose{position:absolute; top:11px; right:12px; width:26px; height:26px; border:0; border-radius:8px; background:rgba(255,255,255,.16); color:#fff; font-size:15px; cursor:pointer; line-height:1}
+  .cxph .nm{font-size:17px; font-weight:800; letter-spacing:-.02em; padding-right:30px}
+  .cxph .loc{font-size:12px; opacity:.86; margin-top:3px}
+  .cxph .pre-badge{display:inline-block; margin-top:8px; font-size:11px; font-weight:800; background:#8F7B5B; padding:3px 9px; border-radius:999px}
+  .cxbody{padding:14px 16px 18px}
+  .cxgrid{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:14px}
+  .cxcell{background:var(--bg2); border:1px solid var(--line); border-radius:11px; padding:9px 11px}
+  .cxcell .k{font-size:10.5px; color:var(--mut); font-weight:700}
+  .cxcell .v{font-size:15px; color:var(--ink); font-weight:800; margin-top:2px; letter-spacing:-.02em}
+  .cxcell.wide{grid-column:1/3}
+  .cxcell .v.big{font-size:21px; color:var(--brand)}
+  .cxspark{margin:4px 0 14px}
+  .cxspark .lab{font-size:11px; color:var(--mut); font-weight:700; margin-bottom:5px}
+  .cxbtn{display:block; width:100%; text-align:center; border:0; background:linear-gradient(135deg,#3E5676,#5A7BA8); color:#fff; font-size:14px; font-weight:800; padding:12px; border-radius:12px; cursor:pointer; letter-spacing:-.01em}
+  .cxnote{font-size:11px; color:var(--mut); margin-top:10px; line-height:1.5}
+  @media(max-width:640px){ .cxpanel{top:auto; right:8px; left:8px; bottom:8px; width:auto; max-height:56%} }
 
   .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px}
   @media(max-width:640px){ .stats{grid-template-columns:repeat(2,1fr)} }
@@ -147,7 +172,8 @@
           <input id="q" placeholder="단지명으로 검색 (예: 헬리오시티)" />
           <button type="submit" aria-label="검색">🔎</button>
         </form>
-        <div class="maphint2">📍 마커 = 국토부 실거래 리포트 · 🎟️ 분양권 포함</div>
+        <div class="maphint2">📍 알약 = 단지(클릭 시 단지 정보) · 🟤 입주예정 · 국토부 실거래</div>
+        <div class="cxpanel" id="cxPanel"></div>
       </div>
       <div style="display:none">
         <span id="greet"></span><span id="homeSub"></span><span id="homeStats"></span><span id="homeHighs"></span>
@@ -406,7 +432,7 @@
     if(kakaoInited) return; kakaoInited=true;
     if(!KAKAO_KEY){ mapMsg("카카오 지도 키가 설정되지 않았습니다."); return; }
     var s=document.createElement("script");
-    s.src="//dapi.kakao.com/v2/maps/sdk.js?appkey="+KAKAO_KEY+"&autoload=false&libraries=clusterer";
+    s.src="//dapi.kakao.com/v2/maps/sdk.js?appkey="+KAKAO_KEY+"&autoload=false&libraries=clusterer,services";
     s.onerror=function(){ mapMsg("카카오 지도를 불러오지 못했습니다.<br>로컬 파일(file://)에서는 도메인 제한으로 안 보일 수 있어요.<br>serve.mjs로 로컬 서버를 띄우고 그 주소를 카카오 도메인에 등록하면 표시됩니다."); };
     s.onload=function(){
       if(typeof kakao==="undefined" || !kakao.maps){ mapMsg("카카오 지도 로드 실패(도메인 제한일 수 있어요)."); return; }
@@ -414,21 +440,171 @@
     };
     document.head.appendChild(s);
   }
+  // ===== 단지 데이터(국토부, 임장플러스와 동일 소스) 지연 로드 + 지오코딩 =====
+  var CXLIST=null, CXLOADING=false;
+  function nrm(s){ return String(s||"").replace(/\s/g,"").toLowerCase(); }
+  function cnorm(s){ return nrm(s).replace(/\(.*?\)/g,"").replace(/아파트/g,""); }
+  function decodeHtml(s){ return String(s||"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#0?39;|&apos;/g,"'").replace(/&#(\d+);/g,function(_,n){return String.fromCharCode(+n);}); }
+  function hav(a1,g1,a2,g2){ var R=6371000,t=Math.PI/180,dA=(a2-a1)*t,dG=(g2-g1)*t,x=Math.sin(dA/2)*Math.sin(dA/2)+Math.cos(a1*t)*Math.cos(a2*t)*Math.sin(dG/2)*Math.sin(dG/2); return 2*R*Math.asin(Math.sqrt(x)); }
+  var GEO_LS="sise.geo1";
+  function readGeo(){ try{ return JSON.parse(localStorage.getItem(GEO_LS)||"{}"); }catch(e){ return {}; } }
+  var GEO=readGeo();
+  function curYM(){ var d=new Date(); return d.getFullYear()*100+(d.getMonth()+1); }
+  function pickPlace(res,name,lat,lng){
+    var nn=cnorm(name); if(!nn) return null;
+    var cand=(res||[]).filter(function(d){ var pn=cnorm(d.place_name); if(!pn||!(pn.indexOf(nn)>=0||nn.indexOf(pn)>=0)) return false;
+      if(/공인중개|중개사|부동산|상가|오피스텔?|학원|병원|약국|교회|주차장|모델하우스/.test(d.place_name||"")&&!/아파트/.test(d.place_name||"")) return false; return true; });
+    if(lat!=null) cand=cand.filter(function(d){ return hav(lat,lng,+d.y,+d.x)<=3000; });
+    if(!cand.length) return null;
+    var apt=cand.filter(function(d){ return /아파트/.test(d.category_name||"")||/아파트/.test(d.place_name||""); });
+    var pool=apt.length?apt:cand;
+    if(lat!=null) pool.sort(function(a,b){ return hav(lat,lng,+a.y,+a.x)-hav(lat,lng,+b.y,+b.x); });
+    return [ +(+pool[0].y).toFixed(6), +(+pool[0].x).toFixed(6) ];
+  }
+  var geocoding=false;
+  function geocodeBatch(cxs, done){
+    if(geocoding||!window.kakao||!kakao.maps.services||!cxs.length){ done&&done(); return; }
+    geocoding=true;
+    var ps=new kakao.maps.services.Places(), cache=readGeo(), i=0;
+    function search(q,c,cb){ ps.keywordSearch(q,function(res,st){ cb(st===kakao.maps.services.Status.OK?res:[]); },{ location:new kakao.maps.LatLng(c.lat,c.lng), radius:4000 }); }
+    function step(){
+      if(i>=cxs.length){ try{ localStorage.setItem(GEO_LS,JSON.stringify(cache)); }catch(e){} GEO=cache; geocoding=false; done&&done(); return; }
+      var c=cxs[i++];
+      if(c.key in cache){ step(); return; }
+      search(c.u+" "+c.n,c,function(res){ var coord=pickPlace(res,c.n,c.lat,c.lng);
+        if(coord){ cache[c.key]=coord; step(); return; }
+        search(c.g+" "+c.n,c,function(res2){ var co2=pickPlace(res2,c.n,c.lat,c.lng);
+          if(co2){ cache[c.key]=co2; step(); return; }
+          var core=(c.n.split(/[&()\/]|\s/)[0]||"").trim();
+          if(core.length>=4){ search(c.g+" "+core,c,function(res3){ cache[c.key]=pickPlace(res3,core,c.lat,c.lng)||0; step(); }); }
+          else { cache[c.key]=0; step(); }
+        });
+      });
+    }
+    step();
+  }
+  function loadCX(cb){
+    if(CXLIST){ cb(CXLIST); return; }
+    if(CXLOADING){ return; } CXLOADING=true;
+    fetch("complexes.json").then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){
+      CXLIST=d.c.map(function(row){
+        var gi=row[0],u=row[1],n=decodeHtml(row[2]),b=row[3],h=row[4],lat=row[5],lng=row[6],t=row[7],hi=row[8],pre=row[9],mv=row[10],pk=row[11];
+        var g=d.gu[gi],p=d.prov[gi];
+        return { key:g+"|"+u+"|"+n, g:g, p:p, u:u, n:n, b:b, h:h, lat:lat, lng:lng, t:t||[], hi:hi||[], pre:pre||[], mv:mv||0, pk:pk||0 };
+      });
+      cb(CXLIST);
+    }).catch(function(){ CXLOADING=false; });
+  }
+
+  // ===== 지도 그리기 =====
+  var CXOVS={}; // key → CustomOverlay
   function drawKakao(){
     var el=document.getElementById("homeMap"); if(!el){ return; }
-    var map=new kakao.maps.Map(el, { center:new kakao.maps.LatLng(37.54,127.02), level:9 }); window.KMAP=map;
+    var map=new kakao.maps.Map(el, { center:new kakao.maps.LatLng(37.4817,126.8647), level:6 }); window.KMAP=map; // 광명 중심
     map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
-    var clusterer=new kakao.maps.MarkerClusterer({ map:map, averageCenter:true, minLevel:7, gridSize:70 });
-    var markers=[];
-    for(var i=0;i<PINS.length;i++){ (function(p){
-      if(!p.lat||!p.lng) return;
-      var mk=new kakao.maps.Marker({ position:new kakao.maps.LatLng(p.lat,p.lng), title:p.n });
-      kakao.maps.event.addListener(mk,"click",function(){ document.getElementById("q2").value=p.n; showTab("report"); searchReport(); });
-      markers.push(mk);
-    })(PINS[i]); }
-    clusterer.addMarkers(markers);
     document.getElementById("homeMapMsg").classList.add("hide");
+    var pending=false;
+    function schedule(){ if(pending) return; pending=true; setTimeout(function(){ pending=false; renderPins(map); },120); }
+    kakao.maps.event.addListener(map,"idle",schedule);
+    loadCX(function(){ renderPins(map); });
   }
+  function renderPins(map){
+    if(!CXLIST) return;
+    var lvl=map.getLevel();
+    if(lvl>6){ for(var k in CXOVS){ CXOVS[k].setMap(null); } CXOVS={}; return; } // 축소 시 숨김(라벨 과밀 방지)
+    var b=map.getBounds(),sw=b.getSouthWest(),ne=b.getNorthEast();
+    var c0=map.getCenter(),clat=c0.getLat(),clng=c0.getLng();
+    var thisY=new Date().getFullYear(), nowYM=curYM();
+    var render=[],toGeo=[];
+    for(var i=0;i<CXLIST.length;i++){ var c=CXLIST[i]; if(!c.lat) continue;
+      var gc=GEO[c.key]; var lat=Array.isArray(gc)?gc[0]:c.lat, lng=Array.isArray(gc)?gc[1]:c.lng;
+      if(lat<sw.getLat()||lat>ne.getLat()||lng<sw.getLng()||lng>ne.getLng()) continue;
+      if(Array.isArray(gc)) render.push({c:c,lat:lat,lng:lng});
+      else if(gc===undefined) toGeo.push(c);
+    }
+    render.sort(function(a,z){ return ((a.lat-clat)*(a.lat-clat)+(a.lng-clng)*(a.lng-clng))-((z.lat-clat)*(z.lat-clat)+(z.lng-clng)*(z.lng-clng)); });
+    var proj=null; try{ proj=map.getProjection(); }catch(e){}
+    var placed=[],show=[];
+    for(var r=0;r<render.length;r++){ if(show.length>=200) break; var it=render[r];
+      if(proj){ var pt=proj.containerPointFromCoords(new kakao.maps.LatLng(it.lat,it.lng)); var hit=false;
+        for(var q=0;q<placed.length;q++){ if(Math.abs(placed[q].x-pt.x)<88&&Math.abs(placed[q].y-pt.y)<20){ hit=true; break; } }
+        if(hit) continue; placed.push(pt); }
+      show.push(it);
+    }
+    var keep={}; for(var s=0;s<show.length;s++) keep[show[s].c.key]=1;
+    for(var k in CXOVS){ if(!keep[k]){ CXOVS[k].setMap(null); delete CXOVS[k]; } }
+    for(var s2=0;s2<show.length;s2++){ (function(it){
+      if(CXOVS[it.c.key]) return; var c=it.c;
+      var isPre = c.mv ? (+c.mv>nowYM) : ((!c.t||!c.t.length)&&c.pre&&c.pre.length&&(!c.b||c.b>thisY));
+      var div=document.createElement("div"); div.className="imj-cx"+(isPre?" pre":""); div.textContent=c.n; div.setAttribute("data-k",c.key);
+      div.addEventListener("click",function(e){ e.stopPropagation(); openCxPanel(c,div); });
+      var ov=new kakao.maps.CustomOverlay({ position:new kakao.maps.LatLng(it.lat,it.lng), content:div, xAnchor:.5, yAnchor:.5, clickable:true, zIndex:0 });
+      ov.setMap(map); CXOVS[it.c.key]=ov;
+    })(show[s2]); }
+    if(toGeo.length){ toGeo.sort(function(a,z){ return ((a.lat-clat)*(a.lat-clat)+(a.lng-clng)*(a.lng-clng))-((z.lat-clat)*(z.lat-clat)+(z.lng-clng)*(z.lng-clng)); });
+      geocodeBatch(toGeo.slice(0,30),function(){ renderPins(map); }); }
+  }
+
+  // ===== in-box 단지 정보 패널 =====
+  function repSeries(t){ // 대표 전용(84에 가깝고 데이터 많은) 시계열 반환
+    if(!t||!t.length) return null; var best=null,bestSc=-1;
+    for(var i=0;i<t.length;i++){ var s=t[i]; var pts=s.slice(2).filter(function(v){return v>0;}).length; var sc=pts*100-Math.abs((s[0]||0)-84);
+      if(sc>bestSc){ bestSc=sc; best=s; } }
+    return best;
+  }
+  function sparkSVG(s){
+    if(!s) return "";
+    var vals=[],years=[],y0=s[1]; for(var i=2;i<s.length;i++){ if(s[i]>0){ vals.push(s[i]/100); years.push(y0+(i-2)); } }
+    if(vals.length<2) return "";
+    var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),W=300,H=64,pad=6,rng=(mx-mn)||1;
+    var pts=vals.map(function(v,i){ var x=pad+i*(W-2*pad)/(vals.length-1); var y=H-pad-(v-mn)/rng*(H-2*pad); return x.toFixed(1)+","+y.toFixed(1); });
+    var last=vals[vals.length-1],first=vals[0],up=last>=first;
+    var col=up?"#3E5676":"#9c6b4f";
+    return '<div class="cxspark"><div class="lab">시세 추이 ('+years[0]+'~'+years[years.length-1]+', 전용 '+Math.round(s[0])+'㎡ 중위)</div>'+
+      '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="64" preserveAspectRatio="none">'+
+      '<polyline fill="none" stroke="'+col+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" points="'+pts.join(" ")+'"/>'+
+      '<circle cx="'+pts[pts.length-1].split(",")[0]+'" cy="'+pts[pts.length-1].split(",")[1]+'" r="3.2" fill="'+col+'"/></svg></div>';
+  }
+  function openCxPanel(c,div){
+    var p=document.getElementById("cxPanel"); if(!p) return;
+    var all=document.querySelectorAll(".imj-cx.sel"); for(var i=0;i<all.length;i++) all[i].classList.remove("sel");
+    if(div) div.classList.add("sel");
+    var nowYM=curYM(), thisY=new Date().getFullYear();
+    var isPre = c.mv ? (+c.mv>nowYM) : ((!c.t||!c.t.length)&&c.pre&&c.pre.length);
+    // 준공/입주
+    var bText;
+    if(c.mv && +c.mv>nowYM){ var ys=String(c.mv); bText=ys.slice(0,4)+"."+ys.slice(4)+" 입주예정"; }
+    else if(c.b){ bText=c.b+"년 ("+(thisY-c.b)+"년차)"; }
+    else bText="-";
+    var hText=c.h?c.h.toLocaleString()+"세대":"-";
+    var pkText="-"; if(c.pk){ pkText=c.pk.toLocaleString()+"대"; if(c.h) pkText+=" · 세대당 "+(c.pk/c.h).toFixed(1); }
+    var s=repSeries(c.t), cur="-", areaText="-";
+    if(s){ var last=0; for(var j=s.length-1;j>=2;j--){ if(s[j]>0){ last=s[j]; break; } } if(last) cur=(last/100).toFixed(1)+"억"; areaText=Math.round(s[0])+"㎡"; }
+    // 분양권 호가(최근)
+    var preHtml="";
+    if(c.pre&&c.pre.length){ var pr=c.pre[c.pre.length-1]; // [날짜,전용,백만원,입주권]
+      if(pr&&pr[2]) preHtml='<div class="cxcell wide"><div class="k">🎟️ 분양권 호가 (전용 '+Math.round(pr[1])+'㎡, '+pr[0]+')</div><div class="v">'+(pr[2]/100).toFixed(1)+'억'+(pr[3]?' <span style="font-size:11px;color:var(--mut)">입주권 '+(pr[3]).toFixed(1)+'억</span>':'')+'</div></div>'; }
+    p.innerHTML='<div class="cxph"><button class="cxclose" onclick="closeCxPanel()" aria-label="닫기">✕</button>'+
+        '<div class="nm">'+esc(c.n)+'</div><div class="loc">'+esc((c.p||"")+" "+c.g+" "+c.u)+'</div>'+
+        (isPre?'<span class="pre-badge">🏗️ 입주예정</span>':'')+'</div>'+
+      '<div class="cxbody">'+
+        (s?'<div class="cxcell wide" style="text-align:center;margin-bottom:11px"><div class="k">현재 시세 (전용 '+areaText+' 중위)</div><div class="v big">'+cur+'</div></div>':'')+
+        sparkSVG(s)+
+        '<div class="cxgrid">'+
+          '<div class="cxcell"><div class="k">준공·연차</div><div class="v" style="font-size:13px">'+bText+'</div></div>'+
+          '<div class="cxcell"><div class="k">세대수</div><div class="v">'+hText+'</div></div>'+
+          '<div class="cxcell"><div class="k">주차가능</div><div class="v" style="font-size:13px">'+pkText+'</div></div>'+
+          '<div class="cxcell"><div class="k">대표 평형</div><div class="v">'+areaText+'</div></div>'+
+          preHtml+
+        '</div>'+
+        '<button class="cxbtn" onclick="cxToReport('+"'"+esc(c.n).replace(/'/g,"\\'")+"'"+')">단지 리포트 자세히 보기 →</button>'+
+        '<div class="cxnote">※ 세대수·준공·주차·시세는 국토부 공공데이터 기준. 위치는 카카오 장소정보로 보정.</div>'+
+      '</div>';
+    p.classList.add("on");
+  }
+  function closeCxPanel(){ var p=document.getElementById("cxPanel"); if(p) p.classList.remove("on");
+    var all=document.querySelectorAll(".imj-cx.sel"); for(var i=0;i<all.length;i++) all[i].classList.remove("sel"); }
+  function cxToReport(name){ document.getElementById("q2").value=name; showTab("report"); searchReport(); }
 
   showTab("home");
   initKakaoMap();
