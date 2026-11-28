@@ -93,6 +93,12 @@
   .cxcell .v.big{font-size:21px; color:var(--brand)}
   .cxspark{margin:4px 0 14px}
   .cxspark .lab{font-size:11px; color:var(--mut); font-weight:700; margin-bottom:5px}
+  .cxpys{display:flex; gap:5px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px; -webkit-overflow-scrolling:touch}
+  .cxpys::-webkit-scrollbar{height:0}
+  .cxpy{flex:0 0 auto; border:1px solid var(--line); background:var(--bg2); color:var(--sub); border-radius:9px; padding:5px 9px; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap; line-height:1.15; text-align:center}
+  .cxpy i{display:block; font-style:normal; font-size:9.5px; font-weight:600; color:var(--mut)}
+  .cxpy.on{background:#3E5676; color:#fff; border-color:#3E5676}
+  .cxpy.on i{color:rgba(255,255,255,.78)}
   .cxtrade{margin:2px 0 14px}
   .cxtrade .lab{font-size:11px; color:var(--mut); font-weight:700; margin-bottom:6px}
   .cxtrade table{width:100%; border-collapse:collapse; font-size:12.5px}
@@ -610,10 +616,10 @@
   }
   // 지도 패널 차트: 매매 중위가 라인 + 연도별 거래량 막대(이중축)
   var cxChart=null;
-  function drawCxChart(c){
+  function drawCxChart(c,s){
     if(!window.Chart) return; var ctx=document.getElementById("cxChart"); if(!ctx) return;
     if(cxChart){ try{ cxChart.destroy(); }catch(e){} cxChart=null; }
-    var s=repSeries(c.t), tc=Array.isArray(c.tc)?c.tc:null; if(!s&&!tc) return;
+    if(!s) s=repSeries(c.t); var tc=Array.isArray(c.tc)?c.tc:null; if(!s&&!tc) return;
     var sy0=s?s[1]:null, syN=s?(s[1]+(s.length-2)-1):null, ty0=tc?tc[0]:null, tyN=tc?(tc[0]+tc.length-2):null;
     var cand0=[sy0,ty0].filter(function(x){return x!=null;}), cand1=[syN,tyN].filter(function(x){return x!=null;});
     var y0=Math.min.apply(null,cand0), y1=Math.max.apply(null,cand1);
@@ -628,10 +634,24 @@
       { type:"line", label:"중위가", data:med, yAxisID:"y", borderColor:"#3E5676", backgroundColor:"#3E5676", borderWidth:2.2, pointRadius:2, tension:.25, spanGaps:true, order:1 }
     ]},
       options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false},
-        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(x){ return x.dataset.type==="bar"?(x.parsed.y+"건"):(x.parsed.y!=null?x.parsed.y.toFixed(1)+"억":""); } } } },
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(x){ return x.dataset.type==="bar"?("전체 거래 "+x.parsed.y+"건"):(x.parsed.y!=null?("중위 "+x.parsed.y.toFixed(1)+"억"):""); } } } },
         scales:{ x:{ grid:{display:false}, ticks:{color:tick,font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8} },
           y:{ position:"left", grid:{color:grid}, ticks:{color:tick,font:{size:10},callback:function(v){return v+"억";}} },
           y1:{ position:"right", grid:{display:false}, ticks:{color:tick,font:{size:10},callback:function(v){return v+"건";}}, beginAtZero:true } } } });
+  }
+  // 평형 선택 → 해당 전용 그래프
+  var CXCUR=null;
+  function selCxBand(i){ if(!CXCUR) return; CXCUR.bi=i; renderCxBand(); }
+  function renderCxBand(){
+    var dyn=document.getElementById("cxDyn"); if(!dyn||!CXCUR) return;
+    var c=CXCUR.c, bands=CXCUR.bands, bi=CXCUR.bi, s=bands[bi];
+    var last=0,ly=0; for(var j=s.length-1;j>=2;j--){ if(s[j]>0){ last=s[j]; ly=s[1]+(j-2); break; } }
+    var cur=last?(last/100).toFixed(1)+"억":"-";
+    var btns=bands.map(function(x,i){ return '<button class="cxpy'+(i===bi?" on":"")+'" onclick="selCxBand('+i+')">'+Math.round(x[0])+'㎡<i>'+Math.round(x[0]/3.3058)+'평</i></button>'; }).join("");
+    dyn.innerHTML='<div class="cxpys">'+btns+'</div>'+
+      '<div class="cxcell wide" style="text-align:center;margin:0 0 11px"><div class="k">전용 '+Math.round(s[0])+'㎡ 현재 중위'+(ly?" (\'"+String(ly).slice(2)+")":"")+'</div><div class="v big">'+cur+'</div></div>'+
+      '<div class="cxspark"><div class="lab">매매 실거래 추이 · 거래량 (국토부, 전용 '+Math.round(s[0])+'㎡)</div><div style="height:128px;position:relative"><canvas id="cxChart"></canvas></div></div>';
+    setTimeout(function(){ drawCxChart(c,s); },20);
   }
   function openCxPanel(c,div){
     var p=document.getElementById("cxPanel"); if(!p) return;
@@ -656,8 +676,7 @@
         '<div class="nm">'+esc(c.n)+'</div><div class="loc">'+esc((c.p||"")+" "+c.g+" "+c.u)+'</div>'+
         (isPre?'<span class="pre-badge">🏗️ 입주예정</span>':'')+'</div>'+
       '<div class="cxbody">'+
-        (s?'<div class="cxcell wide" style="text-align:center;margin-bottom:11px"><div class="k">현재 시세 (전용 '+areaText+' 중위)</div><div class="v big">'+cur+'</div></div>':'')+
-        ((s||Array.isArray(c.tc))?'<div class="cxspark"><div class="lab">매매 실거래 추이 · 거래량 (국토부, 전용 '+areaText+')</div><div style="height:128px;position:relative"><canvas id="cxChart"></canvas></div></div>':'')+
+        (s?'<div id="cxDyn"></div>':'')+
         tradeTableHTML(c.t, dealsOf(c))+
         '<div class="cxgrid">'+
           '<div class="cxcell"><div class="k">준공·연차</div><div class="v" style="font-size:13px">'+bText+'</div></div>'+
@@ -670,7 +689,10 @@
         '<div class="cxnote">※ 세대수·준공·주차·시세는 국토부 공공데이터 기준. 위치는 카카오 장소정보로 보정.</div>'+
       '</div>';
     p.classList.add("on");
-    setTimeout(function(){ drawCxChart(c); },30);
+    // 평형 선택 초기값 = 대표 전용
+    if(s){ var rep=repSeries(c.t), repI=0; for(var bi=0;bi<c.t.length;bi++){ if(c.t[bi]===rep){ repI=bi; break; } }
+      CXCUR={ c:c, bands:c.t, bi:repI }; renderCxBand(); }
+    else { CXCUR=null; }
   }
   function closeCxPanel(){ var p=document.getElementById("cxPanel"); if(p) p.classList.remove("on"); if(cxChart){ try{ cxChart.destroy(); }catch(e){} cxChart=null; }
     var all=document.querySelectorAll(".imj-cx.sel"); for(var i=0;i<all.length;i++) all[i].classList.remove("sel"); }
