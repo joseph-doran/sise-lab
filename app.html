@@ -93,6 +93,26 @@
   .cxcell .v.big{font-size:21px; color:var(--brand)}
   .cxspark{margin:4px 0 14px}
   .cxspark .lab{font-size:11px; color:var(--mut); font-weight:700; margin-bottom:5px}
+  .cxdeals{margin:2px 0 14px}
+  .cxdeals .lab{font-size:11px; color:var(--mut); font-weight:700; margin-bottom:6px}
+  .cxdeals .dl-head{display:flex; font-size:10px; color:var(--mut); font-weight:800; padding:0 2px 5px; border-bottom:1px solid var(--line)}
+  .cxdeals .dl-list{max-height:188px; overflow-y:auto}
+  .cxdeals .dl-row{display:flex; font-size:12.5px; padding:6px 2px; border-bottom:1px solid var(--line); align-items:baseline}
+  .cxdeals .dl-row:last-child{border-bottom:0}
+  .cxdeals .dl-d{flex:0 0 62px; color:var(--sub); font-weight:600}
+  .cxdeals .dl-p{flex:1; font-weight:800; color:var(--ink); letter-spacing:-.02em}
+  .cxdeals .dl-f{flex:0 0 40px; text-align:right; color:var(--mut); font-size:11.5px; font-weight:600}
+  .cxtwins{margin:2px 0 14px}
+  .cxtwins .lab{font-size:11px; color:var(--mut); font-weight:700; margin-bottom:6px}
+  .cxtwins .tw-none{font-size:12px; color:var(--mut); padding:4px 2px}
+  .cxtwins .tw-row{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; margin-bottom:5px; background:var(--bg2); border:1px solid var(--line); border-radius:10px; cursor:pointer; transition:transform .06s}
+  .cxtwins .tw-row:active{transform:scale(.99)}
+  .cxtwins .tw-nm{font-size:13px; font-weight:800; color:var(--ink); letter-spacing:-.02em; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .cxtwins .tw-loc{font-size:10.5px; font-weight:600; color:var(--mut); margin-left:6px}
+  .cxtwins .tw-right{flex:0 0 auto; text-align:right}
+  .cxtwins .tw-p{font-size:13px; font-weight:800; color:var(--brand); letter-spacing:-.02em}
+  .cxtwins .tw-r{font-size:10px; color:var(--mut); font-weight:700}
+  .cxtwins .tw-note{font-size:10.5px; color:var(--mut); margin-top:7px}
   .cxpys{display:flex; gap:5px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px; -webkit-overflow-scrolling:touch}
   .cxpys::-webkit-scrollbar{height:0}
   .cxpy{flex:0 0 auto; border:1px solid var(--line); background:var(--bg2); color:var(--sub); border-radius:9px; padding:5px 9px; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap; line-height:1.15; text-align:center}
@@ -509,11 +529,13 @@
       CXLIST=d.c.map(function(row){
         var gi=row[0],u=row[1],n=decodeHtml(row[2]),b=row[3],h=row[4],lat=row[5],lng=row[6],t=row[7],hi=row[8],pre=row[9],mv=row[10],pk=row[11],tc=row[12];
         var g=d.gu[gi],p=d.prov[gi];
-        return { key:g+"|"+u+"|"+n, g:g, p:p, u:u, n:n, b:b, h:h, lat:lat, lng:lng, t:t||[], hi:hi||[], pre:pre||[], mv:mv||0, pk:pk||0, tc:(Array.isArray(tc)?tc:0) };
+        return { key:g+"|"+u+"|"+n, gi:gi, g:g, p:p, u:u, n:n, b:b, h:h, lat:lat, lng:lng, t:t||[], hi:hi||[], pre:pre||[], mv:mv||0, pk:pk||0, tc:(Array.isArray(tc)?tc:0) };
       });
+      CXBYKEY={}; for(var ci=0;ci<CXLIST.length;ci++) CXBYKEY[CXLIST[ci].key]=CXLIST[ci];
       cb(CXLIST);
     }).catch(function(){ CXLOADING=false; });
   }
+  var CXBYKEY={};
 
   // ===== 지도 그리기 =====
   var CXOVS={}; // key → CustomOverlay
@@ -651,8 +673,56 @@
     var btns=bands.map(function(x,i){ return '<button class="cxpy'+(i===bi?" on":"")+'" onclick="selCxBand('+i+')">'+Math.round(x[0])+'㎡<i>'+Math.round(x[0]/3.3058)+'평</i></button>'; }).join("");
     dyn.innerHTML='<div class="cxpys">'+btns+'</div>'+
       '<div class="cxcell wide" style="text-align:center;margin:0 0 11px"><div class="k">전용 '+Math.round(s[0])+'㎡ 현재 중위'+(ly?" (\'"+String(ly).slice(2)+")":"")+'</div><div class="v big">'+cur+'</div></div>'+
-      '<div class="cxspark"><div class="lab">매매 실거래 추이 · 거래량 (국토부, 전용 '+Math.round(s[0])+'㎡)</div><div style="height:128px;position:relative"><canvas id="cxChart"></canvas></div></div>';
+      '<div class="cxspark"><div class="lab">매매 실거래 추이 · 거래량 (국토부, 전용 '+Math.round(s[0])+'㎡)</div><div style="height:128px;position:relative"><canvas id="cxChart"></canvas></div></div>'+
+      '<div class="cxdeals" id="cxDeals"><div class="lab">전용 '+Math.round(s[0])+'㎡ 실거래 (불러오는 중…)</div></div>';
     setTimeout(function(){ drawCxChart(c,s); },20);
+    loadDeals(c.gi, function(shard){ renderDealList(shard, c, Math.round(s[0]), bi); });
+  }
+  // 구별 실거래 파일 지연 로드(캐시) → 평형별 날짜 리스트
+  var DEALCACHE={};
+  function loadDeals(gi, cb){
+    if(gi==null){ cb(null); return; }
+    if(DEALCACHE[gi]){ cb(DEALCACHE[gi]); return; }
+    fetch("deals/"+gi+".json").then(function(r){ return r.ok?r.json():null; }).then(function(d){ DEALCACHE[gi]=d||{}; cb(DEALCACHE[gi]); }).catch(function(){ DEALCACHE[gi]={}; cb(DEALCACHE[gi]); });
+  }
+  function wonMan(man){ var e=Math.floor(man/10000), r=man%10000; return (e?e+"억":"")+(r?(e?" ":"")+r.toLocaleString():(e?"":"0")); }
+  function fmtD(d){ var s=String(d); return s.slice(2,4)+"."+s.slice(4,6)+"."+s.slice(6,8); }
+  function renderDealList(shard, c, area, bi){
+    if(!CXCUR||CXCUR.c!==c||CXCUR.bi!==bi) return; // 그 사이 다른 평형/단지로 바뀌면 무시
+    var box=document.getElementById("cxDeals"); if(!box) return;
+    var sub=shard && shard[c.u+"|"+c.n], list=sub && sub[area];
+    if(!list||!list.length){ box.innerHTML='<div class="lab">전용 '+area+'㎡ · 최근 실거래 내역 없음</div>'; return; }
+    var rows=list.map(function(d){ return '<div class="dl-row"><span class="dl-d">'+fmtD(d[0])+'</span><span class="dl-p">'+wonMan(d[1])+'</span><span class="dl-f">'+(d[2]?d[2]+'층':'-')+'</span></div>'; }).join("");
+    box.innerHTML='<div class="lab">전용 '+area+'㎡ 실거래 · 최근 '+list.length+'건 (국토부)</div>'+
+      '<div class="dl-head"><span class="dl-d">계약일</span><span class="dl-p">거래가</span><span class="dl-f">층</span></div>'+
+      '<div class="dl-list">'+rows+'</div>';
+  }
+  // 쌍둥이 단지(가격 동행) — 슬림 룩업 지연 로드
+  var TWINS=null, TWINSLOADING=false;
+  function loadTwins(cb){
+    if(TWINS){ cb(TWINS); return; } if(TWINSLOADING){ setTimeout(function(){ loadTwins(cb); },200); return; }
+    TWINSLOADING=true; fetch("twins.json").then(function(r){ return r.ok?r.json():{}; }).then(function(d){ TWINS=d||{}; cb(TWINS); }).catch(function(){ TWINS={}; cb(TWINS); });
+  }
+  function renderTwins(c){
+    var box=document.getElementById("cxTwins"); if(!box) return;
+    loadTwins(function(tw){
+      if(!CXCUR||CXCUR.c!==c) return;
+      var list=tw[c.key];
+      if(!list||!list.length){ box.innerHTML='<div class="lab">👯 쌍둥이 단지</div><div class="tw-none">가격이 함께 움직인 쌍둥이 데이터가 없습니다.</div>'; return; }
+      var rows=list.map(function(x){ var tk=x.g+"|"+x.u+"|"+x.n;
+        return '<div class="tw-row" onclick="openTwin('+"'"+tk.replace(/'/g,"\\'")+"','"+esc(x.n).replace(/'/g,"\\'")+"'"+')">'+
+          '<div class="tw-nm">'+esc(x.n)+'<span class="tw-loc">'+esc(x.u)+'</span></div>'+
+          '<div class="tw-right"><div class="tw-p">'+(x.price?x.price.toFixed(1)+'억':'-')+'</div><div class="tw-r">동행 '+Math.round(x.r*100)+'%</div></div></div>'; }).join("");
+      box.innerHTML='<div class="lab">👯 쌍둥이 단지 · 가격 동행 상위 '+list.length+'곳</div>'+rows+
+        '<div class="tw-note">※ 국토부 실거래 가격 흐름의 상관도(동행률) 기준.</div>';
+    });
+  }
+  function openTwin(key, name){
+    var tc=CXBYKEY[key];
+    if(tc){ if(window.KMAP){ var g=GEO[tc.key], la=Array.isArray(g)?g[0]:tc.lat, ln=Array.isArray(g)?g[1]:tc.lng;
+        if(la){ KMAP.setLevel(Math.min(KMAP.getLevel(),5)); KMAP.setCenter(new kakao.maps.LatLng(la,ln)); } }
+      openCxPanel(tc,null); var b=document.getElementById("cxPanel"); if(b) b.scrollTop=0; }
+    else cxToReport(name);
   }
   function openCxPanel(c,div){
     var p=document.getElementById("cxPanel"); if(!p) return;
@@ -686,14 +756,15 @@
           '<div class="cxcell"><div class="k">대표 평형</div><div class="v">'+areaText+'</div></div>'+
           preHtml+
         '</div>'+
+        '<div class="cxtwins" id="cxTwins"></div>'+
         '<button class="cxbtn" onclick="cxToReport('+"'"+esc(c.n).replace(/'/g,"\\'")+"'"+')">단지 리포트 자세히 보기 →</button>'+
         '<div class="cxnote">※ 세대수·준공·주차·시세는 국토부 공공데이터 기준. 위치는 카카오 장소정보로 보정.</div>'+
       '</div>';
     p.classList.add("on");
     // 평형 선택 초기값 = 대표 전용
-    if(s){ var rep=repSeries(c.t), repI=0; for(var bi=0;bi<c.t.length;bi++){ if(c.t[bi]===rep){ repI=bi; break; } }
-      CXCUR={ c:c, bands:c.t, bi:repI }; renderCxBand(); }
-    else { CXCUR=null; }
+    CXCUR={ c:c, bands:c.t||[], bi:0 };
+    if(s){ var rep=repSeries(c.t), repI=0; for(var bi=0;bi<c.t.length;bi++){ if(c.t[bi]===rep){ repI=bi; break; } } CXCUR.bi=repI; renderCxBand(); }
+    renderTwins(c);
   }
   function closeCxPanel(){ var p=document.getElementById("cxPanel"); if(p) p.classList.remove("on"); if(cxChart){ try{ cxChart.destroy(); }catch(e){} cxChart=null; }
     var all=document.querySelectorAll(".imj-cx.sel"); for(var i=0;i<all.length;i++) all[i].classList.remove("sel"); }
