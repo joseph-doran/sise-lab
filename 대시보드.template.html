@@ -93,6 +93,17 @@
   .cxcell .v.big{font-size:21px; color:var(--brand)}
   .cxspark{margin:4px 0 14px}
   .cxspark .lab{font-size:11px; color:var(--mut); font-weight:700; margin-bottom:5px}
+  .cxtrade{margin:2px 0 14px}
+  .cxtrade .lab{font-size:11px; color:var(--mut); font-weight:700; margin-bottom:6px}
+  .cxtrade table{width:100%; border-collapse:collapse; font-size:12.5px}
+  .cxtrade th{text-align:right; font-size:10.5px; color:var(--mut); font-weight:700; padding:0 0 4px; border-bottom:1px solid var(--line)}
+  .cxtrade th:first-child{text-align:left}
+  .cxtrade td{padding:5px 0; border-bottom:1px solid var(--line); text-align:right}
+  .cxtrade td:first-child{text-align:left; color:var(--sub); font-weight:700}
+  .cxtrade td.price{font-weight:800; color:var(--ink); letter-spacing:-.02em}
+  .cxtrade td.yr{color:var(--mut); font-size:11px; width:30px}
+  .cxtrade .up{color:#9c6b4f} .cxtrade .dn{color:#3E7668}
+  .cxtrade tr:last-child td{border-bottom:0}
   .cxbtn{display:block; width:100%; text-align:center; border:0; background:linear-gradient(135deg,#3E5676,#5A7BA8); color:#fff; font-size:14px; font-weight:800; padding:12px; border-radius:12px; cursor:pointer; letter-spacing:-.01em}
   .cxnote{font-size:11px; color:var(--mut); margin-top:10px; line-height:1.5}
   @media(max-width:640px){ .cxpanel{top:auto; right:8px; left:8px; bottom:8px; width:auto; max-height:56%} }
@@ -565,6 +576,27 @@
       '<polyline fill="none" stroke="'+col+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" points="'+pts.join(" ")+'"/>'+
       '<circle cx="'+pts[pts.length-1].split(",")[0]+'" cy="'+pts[pts.length-1].split(",")[1]+'" r="3.2" fill="'+col+'"/></svg></div>';
   }
+  function tradeRows(t){ // 전용별 최근 실거래 중위 + 직전 비교
+    if(!t||!t.length) return [];
+    var rows=[]; for(var i=0;i<t.length;i++){ var s=t[i],y0=s[1],lastV=0,lastY=0,prevV=0;
+      for(var j=2;j<s.length;j++){ if(s[j]>0){ prevV=lastV; lastV=s[j]; lastY=y0+(j-2); } }
+      if(lastV>0) rows.push({ area:s[0], v:lastV, y:lastY, prev:prevV }); }
+    rows.sort(function(a,b){ return a.area-b.area; });
+    return rows;
+  }
+  function tradeTableHTML(t){
+    var rows=tradeRows(t); if(!rows.length) return "";
+    if(rows.length>7) rows=rows.slice(0,7);
+    var body=rows.map(function(r){
+      var py=Math.round(r.area/3.3058); // 전용 평
+      var dir=""; if(r.prev){ var d=r.v-r.prev; if(d>0) dir='<span class="up">▲</span>'; else if(d<0) dir='<span class="dn">▼</span>'; }
+      return '<tr><td>전용 '+Math.round(r.area)+'㎡<span style="color:var(--mut);font-weight:500"> ·'+py+'평</span></td>'+
+        '<td class="price">'+(r.v/100).toFixed(1)+'억 '+dir+'</td>'+
+        '<td class="yr">\''+String(r.y).slice(2)+'</td></tr>';
+    }).join("");
+    return '<div class="cxtrade"><div class="lab">평형별 실거래 중위가 (국토부)</div>'+
+      '<table><thead><tr><th>전용·평</th><th>최근 중위</th><th>연도</th></tr></thead><tbody>'+body+'</tbody></table></div>';
+  }
   function openCxPanel(c,div){
     var p=document.getElementById("cxPanel"); if(!p) return;
     var all=document.querySelectorAll(".imj-cx.sel"); for(var i=0;i<all.length;i++) all[i].classList.remove("sel");
@@ -590,6 +622,7 @@
       '<div class="cxbody">'+
         (s?'<div class="cxcell wide" style="text-align:center;margin-bottom:11px"><div class="k">현재 시세 (전용 '+areaText+' 중위)</div><div class="v big">'+cur+'</div></div>':'')+
         sparkSVG(s)+
+        tradeTableHTML(c.t)+
         '<div class="cxgrid">'+
           '<div class="cxcell"><div class="k">준공·연차</div><div class="v" style="font-size:13px">'+bText+'</div></div>'+
           '<div class="cxcell"><div class="k">세대수</div><div class="v">'+hText+'</div></div>'+
