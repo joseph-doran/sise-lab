@@ -136,6 +136,21 @@
   .cxbtn{display:block; width:100%; text-align:center; border:0; background:linear-gradient(135deg,#3E5676,#5A7BA8); color:#fff; font-size:14px; font-weight:800; padding:12px; border-radius:12px; cursor:pointer; letter-spacing:-.01em}
   .cxnote{font-size:11px; color:var(--mut); margin-top:10px; line-height:1.5}
   @media(max-width:640px){ .cxpanel{top:auto; right:8px; left:8px; bottom:8px; width:auto; max-height:56%} }
+  /* 단지 비교 in-box (왼쪽) */
+  .cxcompare{position:absolute; top:12px; left:12px; bottom:12px; z-index:15; width:min(340px,86vw); background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.24); overflow:auto; transform:translateX(calc(-100% - 20px)); transition:transform .22s cubic-bezier(.2,.8,.2,1); opacity:0; pointer-events:none}
+  .cxcompare.on{transform:none; opacity:1; pointer-events:auto}
+  .cxcompare .cmp-h{background:linear-gradient(135deg,#2a2419,#61533D 70%,#8F7B5B)}
+  .cmp-head{display:flex; align-items:flex-start; gap:6px; margin-bottom:12px}
+  .cmp-head .cmp-b,.cmp-head .cmp-t{flex:1; font-size:12.5px; font-weight:800; color:var(--ink); line-height:1.25; letter-spacing:-.02em; min-width:0}
+  .cmp-head .cmp-t{text-align:right}
+  .cmp-head .cmp-b i,.cmp-head .cmp-t i{display:block; font-style:normal; font-size:10px; font-weight:600; color:var(--mut)}
+  .cmp-head .cmp-k{flex:0 0 auto; font-size:11px; color:var(--mut); font-weight:800; align-self:center}
+  .cmp-row{display:flex; align-items:center; padding:7px 2px; border-bottom:1px solid var(--line); font-size:13px}
+  .cmp-row:last-of-type{border-bottom:0}
+  .cmp-row .cmp-b{flex:1; text-align:left; font-weight:800; color:#3E5676; letter-spacing:-.02em}
+  .cmp-row .cmp-t{flex:1; text-align:right; font-weight:800; color:#8a7655; letter-spacing:-.02em}
+  .cmp-row .cmp-k{flex:0 0 64px; text-align:center; font-size:10.5px; color:var(--mut); font-weight:700}
+  @media(max-width:640px){ .cxcompare{left:8px; right:8px; top:8px; bottom:auto; width:auto; max-height:46%} }
 
   .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px}
   @media(max-width:640px){ .stats{grid-template-columns:repeat(2,1fr)} }
@@ -214,6 +229,7 @@
         </form>
         <div class="maphint2">📍 알약 = 단지(클릭 시 단지 정보) · 🟤 입주예정 · 국토부 실거래</div>
         <div class="cxpanel" id="cxPanel"></div>
+        <div class="cxcompare" id="cxCompare"></div>
       </div>
       <div style="display:none">
         <span id="greet"></span><span id="homeSub"></span><span id="homeStats"></span><span id="homeHighs"></span>
@@ -718,13 +734,61 @@
         '<div class="tw-note">※ 같은 평형군·비슷한 가격대에서 국토부 실거래 흐름이 함께 움직인 순. \'정식\'=동행 95%+격차 안정.</div>';
     });
   }
+  // 쌍둥이 클릭 → 이동하지 않고 왼쪽에 '단지 비교' in-box 추가
+  var cmpChart=null;
+  function curEok(s){ if(!s) return null; for(var j=s.length-1;j>=2;j--){ if(s[j]>0) return s[j]/100; } return null; }
+  function bandOf(t, area){ if(!t) return null; for(var i=0;i<t.length;i++){ if(Math.round(t[i][0])===area) return t[i]; } return repSeries(t); }
   function openTwin(key, name){
-    var tc=CXBYKEY[key];
-    if(tc){ if(window.KMAP){ var g=GEO[tc.key], la=Array.isArray(g)?g[0]:tc.lat, ln=Array.isArray(g)?g[1]:tc.lng;
-        if(la){ KMAP.setLevel(Math.min(KMAP.getLevel(),5)); KMAP.setCenter(new kakao.maps.LatLng(la,ln)); } }
-      openCxPanel(tc,null); var b=document.getElementById("cxPanel"); if(b) b.scrollTop=0; }
-    else cxToReport(name);
+    var tc=CXBYKEY[key]; if(!tc){ cxToReport(name); return; }
+    if(!CXCUR||!CXCUR.c) return; var base=CXCUR.c;
+    var area = (CXCUR.bands&&CXCUR.bands[CXCUR.bi]) ? Math.round(CXCUR.bands[CXCUR.bi][0]) : (repSeries(base.t)?Math.round(repSeries(base.t)[0]):0);
+    var bS = (CXCUR.bands&&CXCUR.bands[CXCUR.bi]) || repSeries(base.t);
+    var tS = bandOf(tc.t, area);
+    var p=document.getElementById("cxCompare"); if(!p) return;
+    var thisY=new Date().getFullYear();
+    function statRow(label, bv, tv){ return '<div class="cmp-row"><span class="cmp-b">'+bv+'</span><span class="cmp-k">'+label+'</span><span class="cmp-t">'+tv+'</span></div>'; }
+    function bText(c){ if(c.mv&&+c.mv>curYM()){ var y=String(c.mv); return y.slice(0,4)+'.'+y.slice(4)+' 예정'; } return c.b?(c.b+'년'):'-'; }
+    var bc=curEok(bS), tcv=curEok(tS), gap=(bc&&tcv)?((tcv-bc)/bc*100):null;
+    p.innerHTML='<div class="cxph cmp-h"><button class="cxclose" onclick="closeCompare()">✕</button><div class="nm">단지 비교</div>'+
+        '<div class="loc">전용 '+(area||'-')+'㎡ 기준 · 가격 동행 비교</div></div>'+
+      '<div class="cxbody">'+
+        '<div class="cmp-head"><span class="cmp-b">'+esc(base.n)+'<i>'+esc(base.g)+'</i></span><span class="cmp-k">vs</span><span class="cmp-t">'+esc(tc.n)+'<i>'+esc(tc.g)+'</i></span></div>'+
+        '<div class="cxspark"><div class="lab">매매 중위가 추이 비교 (억)</div><div style="height:140px;position:relative"><canvas id="cmpChart"></canvas></div></div>'+
+        statRow('현재 중위', bc?bc.toFixed(1)+'억':'-', tcv?tcv.toFixed(1)+'억':'-')+
+        (gap!=null?statRow('가격차', '', (gap>=0?'+':'')+gap.toFixed(0)+'%'):'')+
+        statRow('준공', bText(base), bText(tc))+
+        statRow('세대수', base.h?base.h.toLocaleString():'-', tc.h?tc.h.toLocaleString():'-')+
+        statRow('대표 평형', (bS?Math.round(bS[0]):'-')+'㎡', (tS?Math.round(tS[0]):'-')+'㎡')+
+        statRow('주차', base.pk?base.pk.toLocaleString()+'대':'-', tc.pk?tc.pk.toLocaleString()+'대':'-')+
+        '<button class="cxbtn" style="margin-top:12px" onclick="twinSolo('+"'"+tc.key.replace(/'/g,"\\'")+"'"+')">'+esc(tc.n)+' 단독 보기 →</button>'+
+      '</div>';
+    p.classList.add("on");
+    setTimeout(function(){ drawCmpChart(base, tc, bS, tS); },30);
   }
+  function twinSolo(key){ var t=CXBYKEY[key]; if(!t) return; closeCompare();
+    if(window.KMAP){ var g=GEO[t.key], la=Array.isArray(g)?g[0]:t.lat, ln=Array.isArray(g)?g[1]:t.lng; if(la){ KMAP.setLevel(Math.min(KMAP.getLevel(),5)); KMAP.setCenter(new kakao.maps.LatLng(la,ln)); } }
+    openCxPanel(t,null); var b=document.getElementById("cxPanel"); if(b) b.scrollTop=0; }
+  function drawCmpChart(base, tc, bS, tS){
+    if(!window.Chart){ return; } var ctx=document.getElementById("cmpChart"); if(!ctx) return;
+    if(cmpChart){ try{ cmpChart.destroy(); }catch(e){} cmpChart=null; }
+    var y0=9999,y1=0; [bS,tS].forEach(function(s){ if(s){ y0=Math.min(y0,s[1]); y1=Math.max(y1,s[1]+s.length-3); } });
+    if(y1<y0) return;
+    var labels=[],d1=[],d2=[];
+    for(var y=y0;y<=y1;y++){ labels.push("'"+String(y).slice(2));
+      d1.push(seriesAt(bS,y)); d2.push(seriesAt(tS,y)); }
+    var dark=document.documentElement.getAttribute("data-theme")==="dark" || (window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.getAttribute("data-theme")!=="light");
+    var grid=dark?"rgba(255,255,255,.07)":"rgba(56,48,36,.07)", tick=dark?"#c7cdd6":"#6f6456";
+    cmpChart=new Chart(ctx,{ type:"line", data:{ labels:labels, datasets:[
+      { label:base.n, data:d1, borderColor:"#3E5676", backgroundColor:"#3E5676", borderWidth:2.2, pointRadius:0, tension:.25, spanGaps:true },
+      { label:tc.n, data:d2, borderColor:"#8F7B5B", backgroundColor:"#8F7B5B", borderWidth:2.2, pointRadius:0, tension:.25, spanGaps:true, borderDash:[4,3] }
+    ]},
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false},
+        plugins:{ legend:{display:true, labels:{color:tick,font:{size:10},boxWidth:14,padding:8}}, tooltip:{ callbacks:{ label:function(x){ return (x.dataset.label+": ")+(x.parsed.y!=null?x.parsed.y.toFixed(1)+"억":"-"); } } } },
+        scales:{ x:{ grid:{display:false}, ticks:{color:tick,font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8} },
+          y:{ grid:{color:grid}, ticks:{color:tick,font:{size:10},callback:function(v){return v+"억";}} } } } });
+  }
+  function seriesAt(s,y){ if(!s) return null; var idx=2+(y-s[1]); return (idx>=2&&idx<s.length&&s[idx]>0)?+(s[idx]/100).toFixed(1):null; }
+  function closeCompare(){ var p=document.getElementById("cxCompare"); if(p) p.classList.remove("on"); if(cmpChart){ try{ cmpChart.destroy(); }catch(e){} cmpChart=null; } }
   function openCxPanel(c,div){
     var p=document.getElementById("cxPanel"); if(!p) return;
     var all=document.querySelectorAll(".imj-cx.sel"); for(var i=0;i<all.length;i++) all[i].classList.remove("sel");
@@ -767,7 +831,7 @@
     if(s){ var rep=repSeries(c.t), repI=0; for(var bi=0;bi<c.t.length;bi++){ if(c.t[bi]===rep){ repI=bi; break; } } CXCUR.bi=repI; renderCxBand(); }
     renderTwins(c);
   }
-  function closeCxPanel(){ var p=document.getElementById("cxPanel"); if(p) p.classList.remove("on"); if(cxChart){ try{ cxChart.destroy(); }catch(e){} cxChart=null; }
+  function closeCxPanel(){ var p=document.getElementById("cxPanel"); if(p) p.classList.remove("on"); if(cxChart){ try{ cxChart.destroy(); }catch(e){} cxChart=null; } closeCompare();
     var all=document.querySelectorAll(".imj-cx.sel"); for(var i=0;i<all.length;i++) all[i].classList.remove("sel"); }
   function cxToReport(name){ document.getElementById("q2").value=name; showTab("report"); searchReport(); }
 
