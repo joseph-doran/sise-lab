@@ -63,6 +63,14 @@
   .map-msg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; color:var(--mut); font-size:13.5px; line-height:1.7; background:var(--bg2); z-index:2}
   .map-msg.hide{display:none}
   .maphint{font-size:12px; color:var(--mut); margin:0 2px 20px}
+  /* 지도 탭 = 탭바 아래 전체화면 */
+  .mappanel.on{position:fixed; left:0; right:0; top:105px; bottom:0; padding:0; z-index:5; display:block}
+  @media(max-width:640px){ .mappanel.on{top:101px} }
+  .mappanel .map{position:absolute; inset:0; height:auto; border-radius:0; border:0; margin:0; box-shadow:none}
+  .mapsearch{position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:10; display:flex; gap:6px; width:min(92%,460px); background:var(--panel); border:1px solid var(--line); border-radius:14px; box-shadow:0 10px 28px rgba(0,0,0,.16); padding:6px}
+  .mapsearch input{flex:1; min-width:0; border:0; background:transparent; color:var(--ink); font-size:14px; padding:9px 10px; outline:none; font-family:inherit}
+  .mapsearch button{flex:0 0 auto; border:0; background:linear-gradient(135deg,#3E5676,#5A7BA8); color:#fff; border-radius:10px; padding:0 15px; font-size:15px; cursor:pointer}
+  .maphint2{position:absolute; bottom:12px; left:50%; transform:translateX(-50%); z-index:10; background:var(--panel); color:var(--mut); font-size:11.5px; font-weight:600; padding:6px 12px; border-radius:999px; box-shadow:0 4px 14px rgba(0,0,0,.14); white-space:nowrap; max-width:94%; overflow:hidden; text-overflow:ellipsis}
 
   .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px}
   @media(max-width:640px){ .stats{grid-template-columns:repeat(2,1fr)} }
@@ -131,18 +139,18 @@
 
   <div class="wrap">
     <!-- 개요 -->
-    <section class="panel" data-tab="home">
-      <h2 class="phead" id="greet">환영합니다</h2>
-      <p class="psub" id="homeSub">국토부 공개 실거래 기반 · 서울·경기·인천 · 지도에서 단지를 눌러보세요</p>
-      <div class="search"><input id="q" placeholder="단지명으로 검색 (예: 헬리오시티)" onkeydown="if(event.key==='Enter')goReport()" /><button onclick="goReport()">검색</button></div>
-      <div class="map"><div id="homeMap" style="width:100%;height:100%"></div><div class="map-msg" id="homeMapMsg">카카오 지도 불러오는 중…</div></div>
-      <p class="maphint">📍 마커를 누르면 해당 단지의 국토부 실거래 리포트로 이동합니다. · 🎟️ 분양권 단지 포함</p>
-      <div class="stats" id="homeStats"></div>
-      <div class="grid">
-        <div class="card clk" onclick="showTab('report')"><div class="ico">🔎</div><h3>단지 리포트</h3><p>10년 실거래 추이·고점 대비 회복률</p></div>
-        <div class="card clk" onclick="showTab('highs')"><div class="ico">🔥</div><h3>이달의 신고가</h3><p id="homeHighs">이번 달 신고가 경신 거래</p></div>
-        <div class="card clk" onclick="showTab('ladder')"><div class="ico">🧗</div><h3>급지 사다리</h3><p>구/시별 대표단지·중위가</p></div>
-        <div class="card clk" onclick="showTab('band')"><div class="ico">📈</div><h3>가격대별 추이</h3><p>함께 움직인 단지 겹쳐보기</p></div>
+    <section class="panel mappanel" data-tab="home">
+      <div class="map">
+        <div id="homeMap" style="width:100%;height:100%"></div>
+        <div class="map-msg" id="homeMapMsg">카카오 지도 불러오는 중…</div>
+        <form class="mapsearch" onsubmit="goReport();return false;">
+          <input id="q" placeholder="단지명으로 검색 (예: 헬리오시티)" />
+          <button type="submit" aria-label="검색">🔎</button>
+        </form>
+        <div class="maphint2">📍 마커 = 국토부 실거래 리포트 · 🎟️ 분양권 포함</div>
+      </div>
+      <div style="display:none">
+        <span id="greet"></span><span id="homeSub"></span><span id="homeStats"></span><span id="homeHighs"></span>
       </div>
     </section>
 
@@ -237,6 +245,7 @@
     document.querySelectorAll(".panel").forEach(function(p){ p.classList.toggle("on", p.dataset.tab===k); });
     tabsEl.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.k===k); });
     if(k==="fav") renderFav();
+    if(k==="home" && window.KMAP){ setTimeout(function(){ try{ KMAP.relayout(); }catch(e){} },60); }
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
@@ -407,7 +416,7 @@
   }
   function drawKakao(){
     var el=document.getElementById("homeMap"); if(!el){ return; }
-    var map=new kakao.maps.Map(el, { center:new kakao.maps.LatLng(37.54,127.02), level:9 });
+    var map=new kakao.maps.Map(el, { center:new kakao.maps.LatLng(37.54,127.02), level:9 }); window.KMAP=map;
     map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
     var clusterer=new kakao.maps.MarkerClusterer({ map:map, averageCenter:true, minLevel:7, gridSize:70 });
     var markers=[];
