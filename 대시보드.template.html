@@ -500,9 +500,9 @@
     if(CXLOADING){ return; } CXLOADING=true;
     fetch("complexes.json").then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){
       CXLIST=d.c.map(function(row){
-        var gi=row[0],u=row[1],n=decodeHtml(row[2]),b=row[3],h=row[4],lat=row[5],lng=row[6],t=row[7],hi=row[8],pre=row[9],mv=row[10],pk=row[11];
+        var gi=row[0],u=row[1],n=decodeHtml(row[2]),b=row[3],h=row[4],lat=row[5],lng=row[6],t=row[7],hi=row[8],pre=row[9],mv=row[10],pk=row[11],tc=row[12];
         var g=d.gu[gi],p=d.prov[gi];
-        return { key:g+"|"+u+"|"+n, g:g, p:p, u:u, n:n, b:b, h:h, lat:lat, lng:lng, t:t||[], hi:hi||[], pre:pre||[], mv:mv||0, pk:pk||0 };
+        return { key:g+"|"+u+"|"+n, g:g, p:p, u:u, n:n, b:b, h:h, lat:lat, lng:lng, t:t||[], hi:hi||[], pre:pre||[], mv:mv||0, pk:pk||0, tc:(Array.isArray(tc)?tc:0) };
       });
       cb(CXLIST);
     }).catch(function(){ CXLOADING=false; });
@@ -608,6 +608,31 @@
     return '<div class="cxtrade"><div class="lab">평형별 실거래 (국토부'+(totalD?' · 누적 '+totalD.toLocaleString()+'건':'')+')</div>'+
       '<table><thead><tr><th>전용·평</th><th>최근 중위</th><th>건수</th><th>연도</th></tr></thead><tbody>'+body+'</tbody></table></div>';
   }
+  // 지도 패널 차트: 매매 중위가 라인 + 연도별 거래량 막대(이중축)
+  var cxChart=null;
+  function drawCxChart(c){
+    if(!window.Chart) return; var ctx=document.getElementById("cxChart"); if(!ctx) return;
+    if(cxChart){ try{ cxChart.destroy(); }catch(e){} cxChart=null; }
+    var s=repSeries(c.t), tc=Array.isArray(c.tc)?c.tc:null; if(!s&&!tc) return;
+    var sy0=s?s[1]:null, syN=s?(s[1]+(s.length-2)-1):null, ty0=tc?tc[0]:null, tyN=tc?(tc[0]+tc.length-2):null;
+    var cand0=[sy0,ty0].filter(function(x){return x!=null;}), cand1=[syN,tyN].filter(function(x){return x!=null;});
+    var y0=Math.min.apply(null,cand0), y1=Math.max.apply(null,cand1);
+    var labels=[],med=[],vol=[];
+    for(var y=y0;y<=y1;y++){ labels.push("'"+String(y).slice(2));
+      var mv=null; if(s){ var idx=2+(y-s[1]); if(idx>=2&&idx<s.length&&s[idx]>0) mv=+(s[idx]/100).toFixed(1); } med.push(mv);
+      var vv=null; if(tc){ var vi=1+(y-tc[0]); if(vi>=1&&vi<tc.length) vv=tc[vi]; } vol.push(vv); }
+    var dark=document.documentElement.getAttribute("data-theme")==="dark" || (window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.getAttribute("data-theme")!=="light");
+    var grid=dark?"rgba(255,255,255,.07)":"rgba(56,48,36,.07)", tick=dark?"#c7cdd6":"#6f6456";
+    cxChart=new Chart(ctx,{ data:{ labels:labels, datasets:[
+      { type:"bar", label:"거래량", data:vol, yAxisID:"y1", backgroundColor:dark?"rgba(173,155,127,.4)":"rgba(143,123,91,.32)", borderWidth:0, order:2, barPercentage:.9, categoryPercentage:.95 },
+      { type:"line", label:"중위가", data:med, yAxisID:"y", borderColor:"#3E5676", backgroundColor:"#3E5676", borderWidth:2.2, pointRadius:2, tension:.25, spanGaps:true, order:1 }
+    ]},
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false},
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(x){ return x.dataset.type==="bar"?(x.parsed.y+"건"):(x.parsed.y!=null?x.parsed.y.toFixed(1)+"억":""); } } } },
+        scales:{ x:{ grid:{display:false}, ticks:{color:tick,font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8} },
+          y:{ position:"left", grid:{color:grid}, ticks:{color:tick,font:{size:10},callback:function(v){return v+"억";}} },
+          y1:{ position:"right", grid:{display:false}, ticks:{color:tick,font:{size:10},callback:function(v){return v+"건";}}, beginAtZero:true } } } });
+  }
   function openCxPanel(c,div){
     var p=document.getElementById("cxPanel"); if(!p) return;
     var all=document.querySelectorAll(".imj-cx.sel"); for(var i=0;i<all.length;i++) all[i].classList.remove("sel");
@@ -632,7 +657,7 @@
         (isPre?'<span class="pre-badge">🏗️ 입주예정</span>':'')+'</div>'+
       '<div class="cxbody">'+
         (s?'<div class="cxcell wide" style="text-align:center;margin-bottom:11px"><div class="k">현재 시세 (전용 '+areaText+' 중위)</div><div class="v big">'+cur+'</div></div>':'')+
-        sparkSVG(s)+
+        ((s||Array.isArray(c.tc))?'<div class="cxspark"><div class="lab">매매 실거래 추이 · 거래량 (국토부, 전용 '+areaText+')</div><div style="height:128px;position:relative"><canvas id="cxChart"></canvas></div></div>':'')+
         tradeTableHTML(c.t, dealsOf(c))+
         '<div class="cxgrid">'+
           '<div class="cxcell"><div class="k">준공·연차</div><div class="v" style="font-size:13px">'+bText+'</div></div>'+
@@ -645,8 +670,9 @@
         '<div class="cxnote">※ 세대수·준공·주차·시세는 국토부 공공데이터 기준. 위치는 카카오 장소정보로 보정.</div>'+
       '</div>';
     p.classList.add("on");
+    setTimeout(function(){ drawCxChart(c); },30);
   }
-  function closeCxPanel(){ var p=document.getElementById("cxPanel"); if(p) p.classList.remove("on");
+  function closeCxPanel(){ var p=document.getElementById("cxPanel"); if(p) p.classList.remove("on"); if(cxChart){ try{ cxChart.destroy(); }catch(e){} cxChart=null; }
     var all=document.querySelectorAll(".imj-cx.sel"); for(var i=0;i<all.length;i++) all[i].classList.remove("sel"); }
   function cxToReport(name){ document.getElementById("q2").value=name; showTab("report"); searchReport(); }
 
