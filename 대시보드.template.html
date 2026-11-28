@@ -112,6 +112,7 @@
   .cxtwins .tw-right{flex:0 0 auto; text-align:right}
   .cxtwins .tw-p{font-size:13px; font-weight:800; color:var(--brand); letter-spacing:-.02em}
   .cxtwins .tw-r{font-size:10px; color:var(--mut); font-weight:700}
+  .cxtwins .tw-ok{font-size:9px; font-weight:800; color:#fff; background:#8F7B5B; padding:1px 4px; border-radius:5px; margin-left:3px}
   .cxtwins .tw-note{font-size:10.5px; color:var(--mut); margin-top:7px}
   .cxpys{display:flex; gap:5px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px; -webkit-overflow-scrolling:touch}
   .cxpys::-webkit-scrollbar{height:0}
@@ -711,10 +712,10 @@
       if(!list||!list.length){ box.innerHTML='<div class="lab">👯 쌍둥이 단지</div><div class="tw-none">가격이 함께 움직인 쌍둥이 데이터가 없습니다.</div>'; return; }
       var rows=list.map(function(x){ var tk=x.g+"|"+x.u+"|"+x.n;
         return '<div class="tw-row" onclick="openTwin('+"'"+tk.replace(/'/g,"\\'")+"','"+esc(x.n).replace(/'/g,"\\'")+"'"+')">'+
-          '<div class="tw-nm">'+esc(x.n)+'<span class="tw-loc">'+esc(x.u)+'</span></div>'+
-          '<div class="tw-right"><div class="tw-p">'+(x.price?x.price.toFixed(1)+'억':'-')+'</div><div class="tw-r">동행 '+Math.round(x.r*100)+'%</div></div></div>'; }).join("");
+          '<div class="tw-nm">'+esc(x.n)+'<span class="tw-loc">'+esc(x.g)+'</span></div>'+
+          '<div class="tw-right"><div class="tw-p">'+(x.price?x.price.toFixed(1)+'억':'-')+'</div><div class="tw-r">동행 '+Math.round(x.r*100)+'%'+(x.strong?' <b class="tw-ok">정식</b>':'')+'</div></div></div>'; }).join("");
       box.innerHTML='<div class="lab">👯 쌍둥이 단지 · 가격 동행 상위 '+list.length+'곳</div>'+rows+
-        '<div class="tw-note">※ 국토부 실거래 가격 흐름의 상관도(동행률) 기준.</div>';
+        '<div class="tw-note">※ 같은 평형군·비슷한 가격대에서 국토부 실거래 흐름이 함께 움직인 순. \'정식\'=동행 95%+격차 안정.</div>';
     });
   }
   function openTwin(key, name){
